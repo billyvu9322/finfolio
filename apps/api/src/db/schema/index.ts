@@ -1,6 +1,7 @@
 export * from './enums.js';
 export * from './users.js';
 export * from './refresh-tokens.js';
+export * from './password-reset-tokens.js';
 export * from './gold-transactions.js';
 export * from './stock-transactions.js';
 export * from './crypto-transactions.js';

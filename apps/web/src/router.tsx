@@ -1,3 +1,4 @@
+import { Suspense, lazy, type ComponentType } from 'react';
 import {
   createRootRoute,
   createRoute,
@@ -7,19 +8,28 @@ import {
 } from '@tanstack/react-router';
 
 import { AppLayout } from '@/components/layout/AppLayout';
-import { PagePlaceholder } from '@/components/PagePlaceholder';
+import { RouteFallback } from '@/components/RouteFallback';
 import { LoginPage } from '@/features/auth/LoginPage';
 import { useAuthStore } from '@/stores/auth';
 
+type RoutePage = () => JSX.Element;
+
+function lazyPage<M extends Record<string, ComponentType<Record<string, never>>>>(loader: () => Promise<M>, name: keyof M): RoutePage {
+  const Component = lazy(() => loader().then((module) => ({ default: module[name] as ComponentType<Record<string, never>> })));
+  return () => (
+    <Suspense fallback={<RouteFallback />}>
+      <Component />
+    </Suspense>
+  );
+}
+
 const rootRoute = createRootRoute({ component: Outlet });
 
-const loginRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/login',
-  component: LoginPage,
-});
+const loginRoute = createRoute({ getParentRoute: () => rootRoute, path: '/login', component: LoginPage });
+const registerRoute = createRoute({ getParentRoute: () => rootRoute, path: '/register', component: lazyPage(() => import('@/features/auth/RegisterPage'), 'RegisterPage') });
+const forgotPasswordRoute = createRoute({ getParentRoute: () => rootRoute, path: '/forgot-password', component: lazyPage(() => import('@/features/auth/ForgotPasswordPage'), 'ForgotPasswordPage') });
+const resetPasswordRoute = createRoute({ getParentRoute: () => rootRoute, path: '/reset-password', component: lazyPage(() => import('@/features/auth/ResetPasswordPage'), 'ResetPasswordPage') });
 
-// Authenticated shell — guards every child route.
 const appRoute = createRoute({
   getParentRoute: () => rootRoute,
   id: 'app',
@@ -39,26 +49,36 @@ const indexRoute = createRoute({
   },
 });
 
-// Helper to declare a placeholder screen quickly.
-const page = (path: string, title: string, description: string) =>
-  createRoute({
-    getParentRoute: () => appRoute,
-    path,
-    component: () => <PagePlaceholder title={title} description={description} />,
-  });
+const child = <TPath extends string>(path: TPath, component: RoutePage) => createRoute({ getParentRoute: () => appRoute, path, component });
 
-const dashboardRoute = page('/dashboard', 'Dashboard', 'Tổng quan AUM, P&L và phân bổ tài sản.');
-const goldRoute = page('/gold', 'Quản lý Vàng', 'Danh mục vàng và biểu đồ lãi/lỗ.');
-const goldAddRoute = page('/gold/add', 'Nhập GD Vàng', 'Form nhập giao dịch vàng.');
-const stocksRoute = page('/stocks', 'Quản lý Chứng khoán', 'Danh mục cổ phiếu và watchlist.');
-const stocksAddRoute = page('/stocks/add', 'Nhập GD Cổ phiếu', 'Form nhập giao dịch cổ phiếu.');
-const cryptoRoute = page('/crypto', 'Quản lý Crypto', 'Danh mục coin và ví lưu trữ.');
-const cryptoAddRoute = page('/crypto/add', 'Nhập GD Crypto', 'Form nhập giao dịch crypto.');
-const reportsRoute = page('/reports', 'Báo cáo', 'Báo cáo P&L và xuất CSV.');
-const settingsRoute = page('/settings', 'Cài đặt', 'Hồ sơ, đơn vị tiền tệ, thông báo.');
+const dashboardRoute = child('/dashboard', lazyPage(() => import('@/features/dashboard/DashboardPage'), 'DashboardPage'));
+const goldRoute = child('/gold', lazyPage(() => import('@/features/gold/GoldPage'), 'GoldPage'));
+const goldAddRoute = child('/gold/add', lazyPage(() => import('@/features/gold/GoldAddPage'), 'GoldAddPage'));
+const stocksRoute = child('/stocks', lazyPage(() => import('@/features/stock/StockPortfolioPage'), 'StockPortfolioPage'));
+const stocksAddRoute = child('/stocks/add', lazyPage(() => import('@/features/stock/StockAddPage'), 'StockAddPage'));
+const StockDetailLazy = lazy(() => import('@/features/stock/StockDetailPage').then((module) => ({ default: module.StockDetailPage })));
+const stockDetailRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/stocks/$symbol',
+  component: () => {
+    const params = stockDetailRoute.useParams();
+    return (
+      <Suspense fallback={<RouteFallback />}>
+        <StockDetailLazy symbol={params.symbol} />
+      </Suspense>
+    );
+  },
+});
+const cryptoRoute = child('/crypto', lazyPage(() => import('@/features/crypto/CryptoPortfolioPage'), 'CryptoPortfolioPage'));
+const cryptoAddRoute = child('/crypto/add', lazyPage(() => import('@/features/crypto/CryptoAddPage'), 'CryptoAddPage'));
+const reportsRoute = child('/reports', lazyPage(() => import('@/features/reports/ReportsPage'), 'ReportsPage'));
+const settingsRoute = child('/settings', lazyPage(() => import('@/features/settings/SettingsPage'), 'SettingsPage'));
 
 const routeTree = rootRoute.addChildren([
   loginRoute,
+  registerRoute,
+  forgotPasswordRoute,
+  resetPasswordRoute,
   appRoute.addChildren([
     indexRoute,
     dashboardRoute,
@@ -66,6 +86,7 @@ const routeTree = rootRoute.addChildren([
     goldAddRoute,
     stocksRoute,
     stocksAddRoute,
+    stockDetailRoute,
     cryptoRoute,
     cryptoAddRoute,
     reportsRoute,

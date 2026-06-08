@@ -15,6 +15,7 @@ interface AuthState {
   isAuthenticated: boolean;
   setAuth: (token: string, user: AuthUser) => void;
   setToken: (token: string) => void;
+  setUser: (user: AuthUser) => void;
   clear: () => void;
 }
 
@@ -30,6 +31,7 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       setAuth: (accessToken, user) => set({ accessToken, user, isAuthenticated: true }),
       setToken: (accessToken) => set({ accessToken }),
+      setUser: (user) => set({ user }),
       clear: () => set({ accessToken: null, user: null, isAuthenticated: false }),
     }),
     { name: 'finfolio-auth' },

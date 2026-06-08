@@ -24,11 +24,11 @@
 - Modify: `apps/api/src/config/env.ts`
 - Modify: `apps/api/src/app.ts`
 
-- [ ] **Step 1: Add coverage dep + script**
+- [x] **Step 1: Add coverage dep + script**
 
 In `apps/api/package.json`: add `"@vitest/coverage-v8": "^2.1.4"` to `devDependencies`; add `"test:coverage": "vitest run --coverage"` to `scripts`. Run `pnpm install`.
 
-- [ ] **Step 2: Configure coverage (soft thresholds)**
+- [x] **Step 2: Configure coverage (soft thresholds)**
 
 In `apps/api/vitest.config.ts`, extend the `test` block:
 ```ts
@@ -46,14 +46,14 @@ In `apps/api/vitest.config.ts`, extend the `test` block:
   },
 ```
 
-- [ ] **Step 3: `LOG_LEVEL` env**
+- [x] **Step 3: `LOG_LEVEL` env**
 
 In `apps/api/src/config/env.ts`, add to the schema:
 ```ts
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).optional(),
 ```
 
-- [ ] **Step 4: Logger level + request id**
+- [x] **Step 4: Logger level + request id**
 
 In `apps/api/src/app.ts`, replace the `Fastify({...})` logger config:
 ```ts
@@ -67,7 +67,7 @@ In `apps/api/src/app.ts`, replace the `Fastify({...})` logger config:
 ```
 Add at the top of `app.ts`: `import { randomUUID } from 'node:crypto';`
 
-- [ ] **Step 5: Checkpoint**
+- [x] **Step 5: Checkpoint**
 
 Run: `pnpm --filter @finfolio/api typecheck && pnpm --filter @finfolio/api test:coverage`
 Expected: typecheck clean; tests run; a coverage table prints; **no threshold failure** (thresholds commented).
@@ -83,7 +83,7 @@ Expected: typecheck clean; tests run; a coverage table prints; **no threshold fa
 - Create: `scripts/migrate.sh`
 - Create: `scripts/backup.sh`
 
-- [ ] **Step 1: Production compose (api + web only)**
+- [x] **Step 1: Production compose (api + web only)**
 
 Create `docker-compose.prod.yml`:
 ```yaml
@@ -113,7 +113,7 @@ services:
       - "127.0.0.1:8080:80"
 ```
 
-- [ ] **Step 2: Production env example**
+- [x] **Step 2: Production env example**
 
 Create `.env.prod.example`:
 ```bash
@@ -128,7 +128,7 @@ ENABLE_PRICE_SCHEDULER=true
 LOG_LEVEL=info
 ```
 
-- [ ] **Step 3: Release zip builder**
+- [x] **Step 3: Release zip builder**
 
 Create `scripts/build-release.sh`:
 ```bash
@@ -140,13 +140,13 @@ OUT="dist/finfolio-release.zip"
 mkdir -p dist
 rm -f "$OUT"
 zip -r "$OUT" \
-  apps package.json pnpm-workspace.yaml tsconfig.base.json \
+  apps scripts package.json pnpm-workspace.yaml tsconfig.base.json \
   docker-compose.prod.yml .env.prod.example \
   -x '*/node_modules/*' '*/dist/*' '*/.docker/*' '*/.git/*' '*.log'
 echo "Built $OUT"
 ```
 
-- [ ] **Step 4: Migrate helper**
+- [x] **Step 4: Migrate helper**
 
 Create `scripts/migrate.sh`:
 ```bash
@@ -156,10 +156,10 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 set -a; [ -f .env.prod ] && . ./.env.prod; set +a
 pnpm --filter @finfolio/api db:migrate
-echo "Migrations applied to $DATABASE_URL"
+echo "Migrations applied"
 ```
 
-- [ ] **Step 5: Backup script**
+- [x] **Step 5: Backup script**
 
 Create `scripts/backup.sh`:
 ```bash
@@ -197,7 +197,7 @@ Expected: `COMPOSE_OK` and `SH_OK`. (On Windows-only dev, run these in WSL/Git-B
 
 > Assumes Phases 1–5 web pages exist. Keep the shell (`AppLayout`, `LoginPage`) eager; lazy-load the rest (esp. chart-heavy pages) so `recharts`/`lightweight-charts` land in their own chunks.
 
-- [ ] **Step 1: Route fallback**
+- [x] **Step 1: Route fallback**
 
 Create `apps/web/src/components/RouteFallback.tsx`:
 ```tsx
@@ -210,7 +210,7 @@ export function RouteFallback() {
 }
 ```
 
-- [ ] **Step 2: Convert the router to lazy components**
+- [x] **Step 2: Convert the router to lazy components**
 
 Replace `apps/web/src/router.tsx` with (shell eager, feature pages lazy):
 ```tsx
@@ -312,7 +312,7 @@ declare module '@tanstack/react-router' {
 
 > Keep `stocksAddRoute` (`/stocks/add`) listed before `stockDetailRoute` (`/stocks/$symbol`) so the literal path wins.
 
-- [ ] **Step 3: Checkpoint**
+- [x] **Step 3: Checkpoint**
 
 Run: `pnpm --filter @finfolio/web typecheck`
 Expected: clean. (Any page import path that differs from Phases 1–5 must be corrected to match the actual file.)
@@ -325,7 +325,7 @@ Expected: clean. (Any page import path that differs from Phases 1–5 must be co
 - Modify: `apps/web/src/index.css`
 - Modify: `apps/web/src/components/layout/AppLayout.tsx`
 
-- [ ] **Step 1: Global focus-visible, reduced-motion, skip-link**
+- [x] **Step 1: Global focus-visible, reduced-motion, skip-link**
 
 Append to `apps/web/src/index.css`:
 ```css
@@ -363,7 +363,7 @@ Append to `apps/web/src/index.css`:
 }
 ```
 
-- [ ] **Step 2: Skip-link + main id + aria labels in AppLayout**
+- [x] **Step 2: Skip-link + main id + aria labels in AppLayout**
 
 In `apps/web/src/components/layout/AppLayout.tsx`:
 - As the first element inside the returned root container, add:
@@ -375,7 +375,7 @@ In `apps/web/src/components/layout/AppLayout.tsx`:
 - Add `id="main"` to the `<main>` element.
 - Add `aria-label`s to icon-only controls (e.g. the logout button: `aria-label="Đăng xuất"`; any search/notification icon buttons get descriptive labels).
 
-- [ ] **Step 3: Checkpoint**
+- [x] **Step 3: Checkpoint**
 
 Run: `pnpm --filter @finfolio/web typecheck`
 Expected: clean.
@@ -389,7 +389,7 @@ Expected: clean.
 - Create: `CHANGELOG.md`
 - Modify: `CLAUDE.md`
 
-- [ ] **Step 1: README — Deploy (production) + Scripts**
+- [x] **Step 1: README — Deploy (production) + Scripts**
 
 Add to `README.md` (after the existing Docker section):
 ```markdown
@@ -407,9 +407,9 @@ unzip finfolio-release.zip -d finfolio && cd finfolio
 cp .env.prod.example .env.prod         # edit: DATABASE_URL (existing PG), JWT_SECRET, hostnames
 
 # 3. Build, migrate the existing DB, start
-docker compose -f docker-compose.prod.yml build
+docker compose --env-file .env.prod -f docker-compose.prod.yml build
 sh scripts/migrate.sh                  # runs drizzle migrations against DATABASE_URL
-docker compose -f docker-compose.prod.yml up -d
+docker compose --env-file .env.prod -f docker-compose.prod.yml up -d
 ```
 
 The Cloudflare Tunnel maps the public hostname → `web` (`127.0.0.1:8080`) and `/v1/*` → `api`
@@ -422,7 +422,7 @@ The Cloudflare Tunnel maps the public hostname → `web` (`127.0.0.1:8080`) and 
 - `scripts/backup.sh` — `pg_dump` the external PG (7-day retention); wire to host cron.
 ```
 
-- [ ] **Step 2: CHANGELOG**
+- [x] **Step 2: CHANGELOG**
 
 Create `CHANGELOG.md`:
 ```markdown
@@ -433,21 +433,21 @@ Create `CHANGELOG.md`:
 Personal capital management for gold, Vietnamese stocks, and crypto.
 
 - **Auth:** register/login/logout, JWT access + rotating refresh, profile update.
-- **Gold:** transactions, DCA (FIFO), unrealized P&L, scheduled price refresh.
+- **Gold:** transactions, DCA (FIFO), unrealized P&L, cached price support.
 - **Stock:** transactions + dividends, WAVG, fee/tax, live (delayed) prices, candlestick detail.
 - **Crypto:** transactions + swap, per-(coin, wallet) WAVG, USD/VND, 24h change.
 - **Dashboard & Reports:** cross-asset AUM/P&L, allocation, growth from daily snapshots, P&L report, CSV export.
 - **Ops:** Docker Compose (dev) + production compose (Cloudflare Tunnel, external PostgreSQL), release zip, backup script, Swagger UI.
 ```
 
-- [ ] **Step 3: CLAUDE.md prod note**
+- [x] **Step 3: CLAUDE.md prod note**
 
 In `CLAUDE.md`, under the Commands/Docker area, add a line:
 ```markdown
-- **Production:** `docker-compose.prod.yml` runs api + web only (no `db`, no `nginx`); a Cloudflare Tunnel fronts it and PostgreSQL is external (`DATABASE_URL`). Deploy via `scripts/build-release.sh` → unzip on VM → `scripts/migrate.sh` → `docker compose -f docker-compose.prod.yml up -d`.
+- **Production:** `docker-compose.prod.yml` runs api + web only (no `db`, no `nginx`); a Cloudflare Tunnel fronts it and PostgreSQL is external (`DATABASE_URL`). Deploy via `scripts/build-release.sh` → unzip on VM → `scripts/migrate.sh` → `docker compose --env-file .env.prod -f docker-compose.prod.yml up -d`.
 ```
 
-- [ ] **Step 4: Checkpoint**
+- [x] **Step 4: Checkpoint**
 
 Verify the three docs exist and render (no code check needed).
 
@@ -455,23 +455,23 @@ Verify the three docs exist and render (no code check needed).
 
 ## Final verification
 
-- [ ] **API:** `pnpm --filter @finfolio/api typecheck && pnpm --filter @finfolio/api test:coverage`
+- [x] **API:** `pnpm --filter @finfolio/api typecheck && pnpm --filter @finfolio/api test:coverage`
   Expected: clean; coverage report prints; no threshold failure.
-- [ ] **Web:** `pnpm --filter @finfolio/web typecheck && pnpm --filter @finfolio/web build`
+- [x] **Web:** `pnpm --filter @finfolio/web typecheck && pnpm --filter @finfolio/web build`
   Expected: clean; build emits multiple JS chunks; `recharts`/`lightweight-charts` are in lazy page chunks, not the entry chunk (inspect `dist/assets` filenames/sizes).
 - [ ] **Deploy files:** `docker compose -f docker-compose.prod.yml config` validates; `sh -n scripts/*.sh` passes.
-- [ ] **Docs:** README Deploy + Scripts, CHANGELOG v1.0, CLAUDE.md prod note present.
+- [x] **Docs:** README Deploy + Scripts, CHANGELOG v1.0, CLAUDE.md prod note present.
 
 ---
 
 ## Acceptance criteria (buildable-now, from spec)
 
-- [ ] `test:coverage` runs and reports without failing on partial coverage. (Task 1)
+- [x] `test:coverage` runs and reports without failing on partial coverage. (Task 1)
 - [ ] `docker-compose.prod.yml` = api + web only, binds 127.0.0.1, reads `.env.prod`, validates. (Task 2)
 - [ ] `build-release.sh` zips a release; `migrate.sh`/`backup.sh` pass `sh -n`. (Task 2)
-- [ ] Routes lazy behind Suspense; chart libs split out of the entry chunk; typechecks clean. (Task 3)
-- [ ] Focus ring, reduced-motion, skip-to-content, aria-labels present. (Task 4)
-- [ ] README Deploy/Scripts + CHANGELOG v1.0 + CLAUDE.md prod note written. (Task 5)
+- [x] Routes lazy behind Suspense; chart libs split out of the entry chunk; typechecks clean. (Task 3)
+- [x] Focus ring, reduced-motion, skip-to-content, aria-labels present. (Task 4)
+- [x] README Deploy/Scripts + CHANGELOG v1.0 + CLAUDE.md prod note written. (Task 5)
 
 ## Verify-later launch gate (NOT built here — needs Phases 1–5 running)
 

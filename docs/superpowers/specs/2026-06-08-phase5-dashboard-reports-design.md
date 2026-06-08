@@ -144,14 +144,14 @@ CSV:       GET /reports/export/csv → module txs in range → buildCsv → atta
 
 ## Acceptance criteria
 
-- [ ] `GET /dashboard/summary` AUM/invested/P&L equal the sum of Gold + Stock portfolios; breakdown % sums to 100.
-- [ ] Daily snapshot job (when enabled) and `POST /dashboard/snapshot` upsert one row per user per day.
-- [ ] `GET /dashboard/growth` returns a snapshot-based series (or a single live point when no history).
-- [ ] Recent transactions merge gold + stock, newest first; top holdings/movers correct.
-- [ ] `GET /reports/export/csv` returns valid UTF-8 CSV (BOM) for the chosen module + range.
-- [ ] `GET /reports/snapshot?date=` returns the portfolio state for a past date.
-- [ ] `/dashboard` + `/reports` functional with Recharts area/donut/bar.
-- [ ] `pnpm --filter @finfolio/api test` green; pure tests pass without a DB.
+- [x] `GET /dashboard/summary` AUM/invested/P&L equal the sum of Gold + Stock portfolios; breakdown % sums to 100.
+- [x] Daily snapshot job (when enabled) and `POST /dashboard/snapshot` upsert one row per user per day.
+- [x] `GET /dashboard/growth` returns a snapshot-based series (or a single live point when no history).
+- [x] Recent transactions merge gold + stock, newest first; top holdings/movers correct.
+- [x] `GET /reports/export/csv` returns valid UTF-8 CSV (BOM) for the chosen module + range.
+- [x] `GET /reports/snapshot?date=` returns the portfolio state for a past date.
+- [x] `/dashboard` + `/reports` functional with Recharts area/donut/bar.
+- [x] `pnpm --filter @finfolio/api test` green; pure tests pass without a DB.
 
 ## Out of scope (restated)
 

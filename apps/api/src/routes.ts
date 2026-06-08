@@ -1,6 +1,7 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 
+import { pingDb } from './db/index.js';
 import { authRoutes } from './modules/auth/auth.routes.js';
 import { goldRoutes } from './modules/gold/gold.routes.js';
 import { stockRoutes } from './modules/stock/stock.routes.js';
@@ -15,8 +16,16 @@ import { reportRoutes } from './modules/reports/report.routes.js';
 export const registerRoutes: FastifyPluginAsyncZod = async (app) => {
   app.get(
     '/health',
-    { schema: { tags: ['system'], response: { 200: z.object({ status: z.string() }) } } },
-    async () => ({ status: 'ok' }),
+    {
+      schema: {
+        tags: ['system'],
+        response: { 200: z.object({ status: z.string(), db: z.literal('ok') }) },
+      },
+    },
+    async () => {
+      await pingDb();
+      return { status: 'ok', db: 'ok' as const };
+    },
   );
 
   await app.register(authRoutes, { prefix: '/auth' });

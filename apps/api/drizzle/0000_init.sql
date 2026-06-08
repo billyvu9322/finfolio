@@ -34,6 +34,17 @@ CREATE TABLE "refresh_tokens" (
 CREATE INDEX "refresh_tokens_user_idx" ON "refresh_tokens" ("user_id");
 CREATE INDEX "refresh_tokens_token_hash_idx" ON "refresh_tokens" ("token_hash");
 
+CREATE TABLE "password_reset_tokens" (
+  "id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+  "user_id" uuid NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
+  "token_hash" varchar(64) NOT NULL,
+  "expires_at" timestamptz NOT NULL,
+  "used_at" timestamptz,
+  "created_at" timestamptz DEFAULT now() NOT NULL
+);
+CREATE INDEX "password_reset_tokens_hash_idx" ON "password_reset_tokens" ("token_hash");
+CREATE INDEX "password_reset_tokens_user_idx" ON "password_reset_tokens" ("user_id");
+
 CREATE TABLE "gold_transactions" (
   "id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
   "user_id" uuid NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,

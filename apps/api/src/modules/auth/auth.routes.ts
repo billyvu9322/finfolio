@@ -4,8 +4,11 @@ import { z } from 'zod';
 import { env } from '../../config/env.js';
 import {
   authResponseSchema,
+  forgotPasswordBodySchema,
   loginBodySchema,
+  profileUpdateBodySchema,
   registerBodySchema,
+  resetPasswordBodySchema,
   userPublicSchema,
 } from './auth.schema.js';
 import { authService, AuthError } from './auth.service.js';
@@ -40,6 +43,38 @@ export const authRoutes: FastifyPluginAsyncZod = async (fastify) => {
       const { token } = await authService.issueRefreshToken(user.id);
       reply.setCookie(REFRESH_COOKIE, token, cookieOpts);
       return reply.code(201).send({ accessToken, user });
+    },
+  );
+
+  fastify.post(
+    '/forgot',
+    {
+      ...authRateLimit,
+      schema: {
+        tags: ['auth'],
+        body: forgotPasswordBodySchema,
+        response: { 200: z.object({ message: z.string(), previewToken: z.string().optional() }) },
+      },
+    },
+    async (request, reply) => {
+      const result = await authService.requestPasswordReset(request.body.email);
+      return reply.send({ message: 'If the email exists, a reset link has been sent.', ...result });
+    },
+  );
+
+  fastify.post(
+    '/reset',
+    {
+      ...authRateLimit,
+      schema: {
+        tags: ['auth'],
+        body: resetPasswordBodySchema,
+        response: { 204: z.null() },
+      },
+    },
+    async (request, reply) => {
+      await authService.resetPassword(request.body.token, request.body.password);
+      return reply.code(204).send(null);
     },
   );
 
@@ -88,7 +123,7 @@ export const authRoutes: FastifyPluginAsyncZod = async (fastify) => {
       const token = request.cookies[REFRESH_COOKIE];
       if (token) await authService.revokeRefreshToken(token);
       reply.clearCookie(REFRESH_COOKIE, cookieOpts);
-      return reply.code(204).send();
+      return reply.code(204).send(null);
     },
   );
 
@@ -104,6 +139,23 @@ export const authRoutes: FastifyPluginAsyncZod = async (fastify) => {
     },
     async (request, reply) => {
       const user = await authService.validateAccessUser(request.user.sub);
+      return reply.send(user);
+    },
+  );
+
+  fastify.patch(
+    '/profile',
+    {
+      onRequest: [fastify.authenticate],
+      schema: {
+        tags: ['auth'],
+        security: [{ bearerAuth: [] }],
+        body: profileUpdateBodySchema,
+        response: { 200: userPublicSchema },
+      },
+    },
+    async (request, reply) => {
+      const user = await authService.updateProfile(request.user.sub, request.body);
       return reply.send(user);
     },
   );

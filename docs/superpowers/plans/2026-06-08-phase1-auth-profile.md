@@ -47,7 +47,7 @@
 - Create: `apps/api/vitest.config.ts`
 - Create: `apps/api/src/sanity.test.ts` (temporary)
 
-- [ ] **Step 1: Add vitest dep + scripts**
+- [x] **Step 1: Add vitest dep + scripts**
 
 In `apps/api/package.json`, add to `devDependencies`: `"vitest": "^2.1.4"`. Add to `scripts`:
 ```json
@@ -56,7 +56,7 @@ In `apps/api/package.json`, add to `devDependencies`: `"vitest": "^2.1.4"`. Add 
 "db:seed": "tsx scripts/seed.ts"
 ```
 
-- [ ] **Step 2: Install**
+- [x] **Step 2: Install**
 
 Run: `pnpm install`
 Expected: vitest added, no errors.
@@ -102,7 +102,7 @@ describe('sanity', () => {
 });
 ```
 
-- [ ] **Step 5: Run**
+- [x] **Step 5: Run**
 
 Run: `pnpm --filter @finfolio/api test`
 Expected: 1 passed.
@@ -111,7 +111,7 @@ Expected: 1 passed.
 
 Delete `apps/api/src/sanity.test.ts`.
 
-- [ ] **Step 7: Checkpoint (no git)**
+- [x] **Step 7: Checkpoint (no git)**
 
 Run: `pnpm --filter @finfolio/api typecheck`
 Expected: no errors.
@@ -125,7 +125,7 @@ Expected: no errors.
 - Create: `apps/api/src/modules/auth/token.util.test.ts`
 - Modify: `apps/api/src/modules/auth/auth.service.ts`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `apps/api/src/modules/auth/token.util.test.ts`:
 ```ts
@@ -153,7 +153,7 @@ describe('generateToken', () => {
 });
 ```
 
-- [ ] **Step 2: Run to verify it fails**
+- [x] **Step 2: Run to verify it fails**
 
 Run: `pnpm --filter @finfolio/api test token.util`
 Expected: FAIL — cannot resolve `./token.util.js`.
@@ -251,7 +251,7 @@ describe('updateProfileBodySchema', () => {
 Run: `pnpm --filter @finfolio/api test auth.schema`
 Expected: FAIL — `updateProfileBodySchema` is not exported.
 
-- [ ] **Step 3: Add the schema**
+- [x] **Step 3: Add the schema**
 
 In `apps/api/src/modules/auth/auth.schema.ts`, append:
 ```ts
@@ -268,12 +268,12 @@ export const updateProfileBodySchema = z
 export type UpdateProfileBody = z.infer<typeof updateProfileBodySchema>;
 ```
 
-- [ ] **Step 4: Run to verify it passes**
+- [x] **Step 4: Run to verify it passes**
 
 Run: `pnpm --filter @finfolio/api test auth.schema`
 Expected: all passed.
 
-- [ ] **Step 5: Checkpoint (no git)**
+- [x] **Step 5: Checkpoint (no git)**
 
 Run: `pnpm --filter @finfolio/api typecheck`
 Expected: clean.
@@ -327,7 +327,7 @@ describe('authService.toPublic', () => {
 Run: `pnpm --filter @finfolio/api test auth.service`
 Expected: PASS (`toPublic` already exists and is exported on `authService`). If the `User` type import or field names mismatch, fix the test to match `db/schema/users.ts` exactly.
 
-- [ ] **Step 3: Add `updateProfile` to the service**
+- [x] **Step 3: Add `updateProfile` to the service**
 
 In `apps/api/src/modules/auth/auth.service.ts`, add a method inside the `authService` object (next to `validateAccessUser`):
 ```ts
@@ -354,7 +354,7 @@ Ensure `eq` is imported from `drizzle-orm` (it already is) and `UserPublic`, `us
 Run: `pnpm --filter @finfolio/api test auth.service`
 Expected: PASS.
 
-- [ ] **Step 5: Checkpoint (no git)**
+- [x] **Step 5: Checkpoint (no git)**
 
 Run: `pnpm --filter @finfolio/api typecheck`
 Expected: clean.
@@ -366,7 +366,7 @@ Expected: clean.
 **Files:**
 - Modify: `apps/api/src/modules/auth/auth.routes.ts`
 
-- [ ] **Step 1: Add the route**
+- [x] **Step 1: Add the route**
 
 In `apps/api/src/modules/auth/auth.routes.ts`:
 - Update the schema import to include the new schema:
@@ -391,7 +391,7 @@ In `apps/api/src/modules/auth/auth.routes.ts`:
   );
 ```
 
-- [ ] **Step 2: Checkpoint (no git)**
+- [x] **Step 2: Checkpoint (no git)**
 
 Run: `pnpm --filter @finfolio/api typecheck`
 Expected: clean (route body typed via Zod provider).
@@ -403,7 +403,7 @@ Expected: clean (route body typed via Zod provider).
 **Files:**
 - Modify: `apps/api/src/routes.ts`
 
-- [ ] **Step 1: Replace the health handler**
+- [x] **Step 1: Replace the health handler**
 
 In `apps/api/src/routes.ts`:
 - Add imports at top: `import { sql } from 'drizzle-orm';` and `import { db } from './db/index.js';`
@@ -431,7 +431,7 @@ In `apps/api/src/routes.ts`:
   );
 ```
 
-- [ ] **Step 2: Checkpoint (no git)**
+- [x] **Step 2: Checkpoint (no git)**
 
 Run: `pnpm --filter @finfolio/api typecheck`
 Expected: clean.
@@ -543,7 +543,7 @@ Expected: clean.
 **Files:**
 - Create: `apps/api/scripts/seed.ts`
 
-- [ ] **Step 1: Write the seed script**
+- [x] **Step 1: Write the seed script**
 
 Create `apps/api/scripts/seed.ts`:
 ```ts
@@ -577,7 +577,7 @@ main().catch((err) => {
 });
 ```
 
-- [ ] **Step 2: Checkpoint (no git)**
+- [x] **Step 2: Checkpoint (no git)**
 
 Run: `pnpm --filter @finfolio/api typecheck`
 Expected: clean. (Running `db:seed` itself needs a live DB — skip unless available.)
@@ -590,7 +590,7 @@ Expected: clean. (Running `db:seed` itself needs a live DB — skip unless avail
 - Modify: `apps/web/src/features/auth/auth.api.ts`
 - Modify: `apps/web/src/stores/auth.ts`
 
-- [ ] **Step 1: Add `updateProfile` to the API client**
+- [x] **Step 1: Add `updateProfile` to the API client**
 
 In `apps/web/src/features/auth/auth.api.ts`, append:
 ```ts
@@ -606,7 +606,7 @@ export async function updateProfile(payload: UpdateProfilePayload): Promise<Auth
 }
 ```
 
-- [ ] **Step 2: Add `setUser` to the auth store**
+- [x] **Step 2: Add `setUser` to the auth store**
 
 In `apps/web/src/stores/auth.ts`, add to the `AuthState` interface:
 ```ts
@@ -617,7 +617,7 @@ and to the store implementation (next to `setToken`):
       setUser: (user) => set({ user }),
 ```
 
-- [ ] **Step 3: Checkpoint (no git)**
+- [x] **Step 3: Checkpoint (no git)**
 
 Run: `pnpm --filter @finfolio/web typecheck`
 Expected: clean.
@@ -631,7 +631,7 @@ Expected: clean.
 - Modify: `apps/web/src/router.tsx`
 - Modify: `apps/web/src/features/auth/LoginPage.tsx`
 
-- [ ] **Step 1: Create the Register page**
+- [x] **Step 1: Create the Register page**
 
 Create `apps/web/src/features/auth/RegisterPage.tsx`:
 ```tsx
@@ -757,7 +757,7 @@ export function RegisterPage() {
 }
 ```
 
-- [ ] **Step 2: Register the route**
+- [x] **Step 2: Register the route**
 
 In `apps/web/src/router.tsx`:
 - Add import: `import { RegisterPage } from '@/features/auth/RegisterPage';`
@@ -780,7 +780,7 @@ const routeTree = rootRoute.addChildren([
 ]);
 ```
 
-- [ ] **Step 3: Link from Login**
+- [x] **Step 3: Link from Login**
 
 In `apps/web/src/features/auth/LoginPage.tsx`, add below the submit button (inside the form):
 ```tsx
@@ -792,7 +792,7 @@ In `apps/web/src/features/auth/LoginPage.tsx`, add below the submit button (insi
         </p>
 ```
 
-- [ ] **Step 4: Checkpoint (no git)**
+- [x] **Step 4: Checkpoint (no git)**
 
 Run: `pnpm --filter @finfolio/web typecheck`
 Expected: clean.
@@ -805,7 +805,7 @@ Expected: clean.
 - Create: `apps/web/src/features/settings/SettingsPage.tsx`
 - Modify: `apps/web/src/router.tsx`
 
-- [ ] **Step 1: Create the Settings page**
+- [x] **Step 1: Create the Settings page**
 
 Create `apps/web/src/features/settings/SettingsPage.tsx`:
 ```tsx
@@ -916,7 +916,7 @@ export function SettingsPage() {
 }
 ```
 
-- [ ] **Step 2: Point `/settings` at the real page**
+- [x] **Step 2: Point `/settings` at the real page**
 
 In `apps/web/src/router.tsx`:
 - Add import: `import { SettingsPage } from '@/features/settings/SettingsPage';`
@@ -930,7 +930,7 @@ const settingsRoute = createRoute({
 ```
 (Leave the other `page(...)` placeholder routes unchanged; `settingsRoute` is already in the children array.)
 
-- [ ] **Step 3: Checkpoint (no git)**
+- [x] **Step 3: Checkpoint (no git)**
 
 Run: `pnpm --filter @finfolio/web typecheck`
 Expected: clean.
@@ -942,7 +942,7 @@ Expected: clean.
 **Files:**
 - Modify: `apps/web/src/components/layout/AppLayout.tsx`
 
-- [ ] **Step 1: Hydrate user from the server on mount**
+- [x] **Step 1: Hydrate user from the server on mount**
 
 In `apps/web/src/components/layout/AppLayout.tsx`:
 - Add imports:
@@ -961,7 +961,7 @@ import { me } from '@/features/auth/auth.api';
 ```
 (The axios interceptor + route guard already handle a 401 by clearing auth and redirecting to `/login`, so no extra error handling is needed here.)
 
-- [ ] **Step 2: Checkpoint (no git)**
+- [x] **Step 2: Checkpoint (no git)**
 
 Run: `pnpm --filter @finfolio/web typecheck`
 Expected: clean.
@@ -970,9 +970,9 @@ Expected: clean.
 
 ## Final verification
 
-- [ ] **API:** `pnpm --filter @finfolio/api typecheck && pnpm --filter @finfolio/api test`
+- [x] **API:** `pnpm --filter @finfolio/api typecheck && pnpm --filter @finfolio/api test`
   Expected: typecheck clean; pure tests pass; integration suite skipped (no DB) or passing (with DB).
-- [ ] **Web:** `pnpm --filter @finfolio/web typecheck`
+- [x] **Web:** `pnpm --filter @finfolio/web typecheck`
   Expected: clean.
 - [ ] **Manual smoke (optional, needs DB):** `docker compose up -d db`, `db:push`, `db:seed`, run both dev servers; register a new user → lands on dashboard; Settings → change currency → reload → value persists (via `/auth/me`).
 
@@ -980,9 +980,9 @@ Expected: clean.
 
 ## Acceptance criteria (from spec)
 
-- [ ] `PATCH /auth/profile` updates fields, returns updated user, rejects empty/invalid body, requires auth. (Tasks 3–5, 7)
-- [ ] `GET /health` reflects real DB reachability. (Task 6, 7)
-- [ ] Register page creates an account, enforces strength rules client-side, lands authenticated on dashboard. (Task 10)
-- [ ] Settings profile loads current values, saves, persists across reload via `/auth/me`. (Tasks 11–12)
-- [ ] `pnpm --filter @finfolio/api test` green; pure-logic tests pass without a DB. (Tasks 1–4, 7)
+- [x] `PATCH /auth/profile` updates fields, returns updated user, rejects empty/invalid body, requires auth. (Tasks 3–5, 7)
+- [x] `GET /health` reflects real DB reachability. (Task 6, 7)
+- [x] Register page creates an account, enforces strength rules client-side, lands authenticated on dashboard. (Task 10)
+- [x] Settings profile loads current values, saves, persists across reload via `/auth/me`. (Tasks 11–12)
+- [x] `pnpm --filter @finfolio/api test` green; pure-logic tests pass without a DB. (Tasks 1–4, 7)
 - [ ] No regression to existing login/logout/refresh. (Task 2 refactor is behavior-preserving.)

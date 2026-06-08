@@ -25,18 +25,18 @@ FR-AUTH-01..05 · NFR 4.2 (security) · NFR 4.4 (maintainability) · §6 (DB) ·
 
 ### API
 - [ ] FR-AUTH-01: send confirmation email on register (email provider abstraction; dev = log/preview).
-- [ ] FR-AUTH-04: forgot-password flow — issue 1-hour reset token, `POST /auth/forgot`, `POST /auth/reset`.
-- [ ] FR-AUTH-05: `PATCH /auth/profile` — display name, default currency (VND/USD), timezone.
-- [ ] `GET /v1/health` deep check (DB ping).
-- [ ] Structured pino logging levels via env; request-id.
-- [ ] Seed script (demo user + sample data) for local dev.
+- [x] FR-AUTH-04: forgot-password flow — issue 1-hour reset token, `POST /auth/forgot`, `POST /auth/reset`.
+- [x] FR-AUTH-05: `PATCH /auth/profile` — display name, default currency (VND/USD), timezone.
+- [x] `GET /v1/health` deep check (DB ping).
+- [x] Structured pino logging levels via env; request-id.
+- [x] Seed script (demo user + sample data) for local dev.
 - [ ] Unit tests: auth service (hash, token rotation, revoke), env validation.
 
 ### Web
-- [ ] Register page wired to API (live password-strength: ≥8, uppercase, number).
-- [ ] Forgot-password + Reset-password pages (Stitch screens exist).
-- [ ] Settings → profile form (currency, timezone) → `PATCH /auth/profile`.
-- [ ] Auth bootstrap: on load, call `/auth/me`; global 401 → redirect login.
+- [x] Register page wired to API (live password-strength: ≥8, uppercase, number).
+- [x] Forgot-password + Reset-password pages (Stitch screens exist).
+- [x] Settings → profile form (currency, timezone) → `PATCH /auth/profile`.
+- [x] Auth bootstrap: on load, call `/auth/me`; global 401 → redirect login.
 - [ ] Toast + inline form errors from Zod messages.
 
 ### Infra / CI

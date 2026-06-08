@@ -12,5 +12,9 @@ const queryClient = postgres(env.DATABASE_URL, { max: 20 });
 
 export const db = drizzle(queryClient, { schema });
 
+export async function pingDb(): Promise<void> {
+  await queryClient`select 1`;
+}
+
 export type Database = typeof db;
 export { schema };

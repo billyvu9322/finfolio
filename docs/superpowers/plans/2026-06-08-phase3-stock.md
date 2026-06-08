@@ -25,16 +25,16 @@
 **Files:**
 - Modify: `apps/web/package.json`
 
-- [ ] **Step 1: Add dep**
+- [x] **Step 1: Add dep**
 
 In `apps/web/package.json` `dependencies` add: `"lightweight-charts": "^4.2.0"`.
 
-- [ ] **Step 2: Install**
+- [x] **Step 2: Install**
 
 Run: `pnpm install`
 Expected: no errors.
 
-- [ ] **Step 3: Checkpoint (no git)**
+- [x] **Step 3: Checkpoint (no git)**
 
 Run: `pnpm --filter @finfolio/web typecheck`
 Expected: clean.
@@ -47,7 +47,7 @@ Expected: clean.
 - Create: `apps/api/src/modules/stock/stockMath.ts`
 - Create: `apps/api/src/modules/stock/stockMath.test.ts`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `apps/api/src/modules/stock/stockMath.test.ts`:
 ```ts
@@ -156,12 +156,12 @@ describe('unrealizedPnl', () => {
 });
 ```
 
-- [ ] **Step 2: Run to verify it fails**
+- [x] **Step 2: Run to verify it fails**
 
 Run: `pnpm --filter @finfolio/api test stockMath`
 Expected: FAIL — module not found.
 
-- [ ] **Step 3: Implement the engine**
+- [x] **Step 3: Implement the engine**
 
 Create `apps/api/src/modules/stock/stockMath.ts`:
 ```ts
@@ -251,12 +251,12 @@ export function unrealizedPnl(
 }
 ```
 
-- [ ] **Step 4: Run to verify it passes**
+- [x] **Step 4: Run to verify it passes**
 
 Run: `pnpm --filter @finfolio/api test stockMath`
 Expected: all passed.
 
-- [ ] **Step 5: Checkpoint (no git)**
+- [x] **Step 5: Checkpoint (no git)**
 
 Run: `pnpm --filter @finfolio/api typecheck && pnpm --filter @finfolio/api test`
 Expected: clean + green.
@@ -269,7 +269,7 @@ Expected: clean + green.
 - Create: `apps/api/src/modules/stock/stock.symbols.ts`
 - Create: `apps/api/src/modules/stock/stock.symbols.test.ts`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `apps/api/src/modules/stock/stock.symbols.test.ts`:
 ```ts
@@ -294,12 +294,12 @@ describe('searchSymbols', () => {
 });
 ```
 
-- [ ] **Step 2: Run to verify it fails**
+- [x] **Step 2: Run to verify it fails**
 
 Run: `pnpm --filter @finfolio/api test stock.symbols`
 Expected: FAIL — module not found.
 
-- [ ] **Step 3: Implement the master**
+- [x] **Step 3: Implement the master**
 
 Create `apps/api/src/modules/stock/stock.symbols.ts`:
 ```ts
@@ -347,12 +347,12 @@ export function searchSymbols(q: string, limit = 10): SymbolEntry[] {
 }
 ```
 
-- [ ] **Step 4: Run to verify it passes**
+- [x] **Step 4: Run to verify it passes**
 
 Run: `pnpm --filter @finfolio/api test stock.symbols`
 Expected: all passed.
 
-- [ ] **Step 5: Checkpoint (no git)**
+- [x] **Step 5: Checkpoint (no git)**
 
 Run: `pnpm --filter @finfolio/api typecheck`
 Expected: clean.
@@ -365,7 +365,7 @@ Expected: clean.
 - Create: `apps/api/src/modules/stock/stock.schema.ts`
 - Create: `apps/api/src/modules/stock/stock.schema.test.ts`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `apps/api/src/modules/stock/stock.schema.test.ts`:
 ```ts
@@ -399,12 +399,12 @@ describe('ohlcQuerySchema', () => {
 });
 ```
 
-- [ ] **Step 2: Run to verify it fails**
+- [x] **Step 2: Run to verify it fails**
 
 Run: `pnpm --filter @finfolio/api test stock.schema`
 Expected: FAIL — module not found.
 
-- [ ] **Step 3: Implement the schemas**
+- [x] **Step 3: Implement the schemas**
 
 Create `apps/api/src/modules/stock/stock.schema.ts`:
 ```ts
@@ -521,12 +521,12 @@ export type UpdateStockTxBody = z.infer<typeof updateStockTxSchema>;
 export type ListStockTxQuery = z.infer<typeof listStockTxQuerySchema>;
 ```
 
-- [ ] **Step 4: Run to verify it passes**
+- [x] **Step 4: Run to verify it passes**
 
 Run: `pnpm --filter @finfolio/api test stock.schema`
 Expected: all passed.
 
-- [ ] **Step 5: Checkpoint (no git)**
+- [x] **Step 5: Checkpoint (no git)**
 
 Run: `pnpm --filter @finfolio/api typecheck`
 Expected: clean.
@@ -540,7 +540,7 @@ Expected: clean.
 - Create: `apps/api/src/modules/stock/market/SeedMarketDataProvider.ts`
 - Create: `apps/api/src/modules/stock/market/refreshStockPrices.ts`
 
-- [ ] **Step 1: Interface**
+- [x] **Step 1: Interface**
 
 Create `apps/api/src/modules/stock/market/MarketDataProvider.ts`:
 ```ts
@@ -565,7 +565,7 @@ export interface MarketDataProvider {
 }
 ```
 
-- [ ] **Step 2: Seed provider (deterministic synthetic data)**
+- [x] **Step 2: Seed provider (deterministic synthetic data)**
 
 Create `apps/api/src/modules/stock/market/SeedMarketDataProvider.ts`:
 ```ts
@@ -619,7 +619,7 @@ export class SeedMarketDataProvider implements MarketDataProvider {
 }
 ```
 
-- [ ] **Step 3: Refresh (upsert prices)**
+- [x] **Step 3: Refresh (upsert prices)**
 
 Create `apps/api/src/modules/stock/market/refreshStockPrices.ts`:
 ```ts
@@ -651,7 +651,7 @@ export async function refreshStockPrices(provider: MarketDataProvider): Promise<
 }
 ```
 
-- [ ] **Step 4: Checkpoint (no git)**
+- [x] **Step 4: Checkpoint (no git)**
 
 Run: `pnpm --filter @finfolio/api typecheck`
 Expected: clean.
@@ -663,7 +663,7 @@ Expected: clean.
 **Files:**
 - Modify: `apps/api/src/plugins/scheduler.ts`
 
-- [ ] **Step 1: Add the stock cron**
+- [x] **Step 1: Add the stock cron**
 
 In `apps/api/src/plugins/scheduler.ts`:
 - Add imports:
@@ -682,7 +682,7 @@ import { refreshStockPrices } from '../modules/stock/market/refreshStockPrices.j
   fastify.addHook('onClose', async () => stockTask.stop());
 ```
 
-- [ ] **Step 2: Checkpoint (no git)**
+- [x] **Step 2: Checkpoint (no git)**
 
 Run: `pnpm --filter @finfolio/api typecheck`
 Expected: clean.
@@ -694,7 +694,7 @@ Expected: clean.
 **Files:**
 - Create: `apps/api/src/modules/stock/stock.service.ts`
 
-- [ ] **Step 1: Implement the service**
+- [x] **Step 1: Implement the service**
 
 Create `apps/api/src/modules/stock/stock.service.ts`:
 ```ts
@@ -961,7 +961,7 @@ export const stockService = {
 };
 ```
 
-- [ ] **Step 2: Checkpoint (no git)**
+- [x] **Step 2: Checkpoint (no git)**
 
 Run: `pnpm --filter @finfolio/api typecheck`
 Expected: clean.
@@ -973,7 +973,7 @@ Expected: clean.
 **Files:**
 - Modify: `apps/api/src/modules/stock/stock.routes.ts`
 
-- [ ] **Step 1: Replace the stub**
+- [x] **Step 1: Replace the stub**
 
 Replace the entire contents of `apps/api/src/modules/stock/stock.routes.ts`:
 ```ts
@@ -1083,7 +1083,7 @@ export const stockRoutes: FastifyPluginAsyncZod = async (fastify) => {
 
 > Route order note: `/:symbol/ohlc` is registered after the literal `/transactions`, `/portfolio`, `/prices` routes, so it cannot shadow them. Keep this order.
 
-- [ ] **Step 2: Checkpoint (no git)**
+- [x] **Step 2: Checkpoint (no git)**
 
 Run: `pnpm --filter @finfolio/api typecheck`
 Expected: clean.
@@ -1171,12 +1171,12 @@ describe.skipIf(!hasDb)('stock routes (integration)', () => {
 });
 ```
 
-- [ ] **Step 2: Run (no DB → skipped)**
+- [x] **Step 2: Run (no DB → skipped)**
 
 Run: `pnpm --filter @finfolio/api test`
 Expected: stock integration skipped; stockMath + symbols + schema tests pass.
 
-- [ ] **Step 3: Checkpoint (no git)**
+- [x] **Step 3: Checkpoint (no git)**
 
 Run: `pnpm --filter @finfolio/api typecheck`
 Expected: clean.
@@ -1189,7 +1189,7 @@ Expected: clean.
 - Create: `apps/web/src/features/stock/stock.api.ts`
 - Create: `apps/web/src/features/stock/fees.ts`
 
-- [ ] **Step 1: Fees port**
+- [x] **Step 1: Fees port**
 
 Create `apps/web/src/features/stock/fees.ts`:
 ```ts
@@ -1205,7 +1205,7 @@ export function computeStockFees(action: StockAction, qty: number, price: number
 }
 ```
 
-- [ ] **Step 2: API client**
+- [x] **Step 2: API client**
 
 Create `apps/web/src/features/stock/stock.api.ts`:
 ```ts
@@ -1296,7 +1296,7 @@ export async function getStockOhlc(symbol: string, range: '1m' | '3m' | '6m' = '
 }
 ```
 
-- [ ] **Step 3: Checkpoint (no git)**
+- [x] **Step 3: Checkpoint (no git)**
 
 Run: `pnpm --filter @finfolio/web typecheck`
 Expected: clean.
@@ -1309,7 +1309,7 @@ Expected: clean.
 - Create: `apps/web/src/features/stock/StockPortfolioPage.tsx`
 - Modify: `apps/web/src/router.tsx`
 
-- [ ] **Step 1: Create the page**
+- [x] **Step 1: Create the page**
 
 Create `apps/web/src/features/stock/StockPortfolioPage.tsx`:
 ```tsx
@@ -1411,7 +1411,7 @@ function Kpi({ label, value, tone }: { label: string; value: string; tone?: 'pro
 }
 ```
 
-- [ ] **Step 2: Wire the route**
+- [x] **Step 2: Wire the route**
 
 In `apps/web/src/router.tsx`:
 - Add import: `import { StockPortfolioPage } from '@/features/stock/StockPortfolioPage';`
@@ -1424,7 +1424,7 @@ const stocksRoute = createRoute({
 });
 ```
 
-- [ ] **Step 3: Checkpoint (no git)**
+- [x] **Step 3: Checkpoint (no git)**
 
 Run: `pnpm --filter @finfolio/web typecheck`
 Expected: clean.
@@ -1437,7 +1437,7 @@ Expected: clean.
 - Create: `apps/web/src/features/stock/StockAddPage.tsx`
 - Modify: `apps/web/src/router.tsx`
 
-- [ ] **Step 1: Create the form**
+- [x] **Step 1: Create the form**
 
 Create `apps/web/src/features/stock/StockAddPage.tsx`:
 ```tsx
@@ -1602,7 +1602,7 @@ export function StockAddPage() {
 }
 ```
 
-- [ ] **Step 2: Wire the route**
+- [x] **Step 2: Wire the route**
 
 In `apps/web/src/router.tsx`:
 - Add import: `import { StockAddPage } from '@/features/stock/StockAddPage';`
@@ -1615,7 +1615,7 @@ const stocksAddRoute = createRoute({
 });
 ```
 
-- [ ] **Step 3: Checkpoint (no git)**
+- [x] **Step 3: Checkpoint (no git)**
 
 Run: `pnpm --filter @finfolio/web typecheck`
 Expected: clean.
@@ -1629,7 +1629,7 @@ Expected: clean.
 - Create: `apps/web/src/features/stock/StockDetailPage.tsx`
 - Modify: `apps/web/src/router.tsx`
 
-- [ ] **Step 1: Candlestick component**
+- [x] **Step 1: Candlestick component**
 
 Create `apps/web/src/features/stock/CandlestickChart.tsx`:
 ```tsx
@@ -1684,7 +1684,7 @@ export function CandlestickChart({ data }: { data: Ohlc }) {
 }
 ```
 
-- [ ] **Step 2: Detail page**
+- [x] **Step 2: Detail page**
 
 Create `apps/web/src/features/stock/StockDetailPage.tsx`:
 ```tsx
@@ -1773,7 +1773,7 @@ function Row({ label, value }: { label: string; value: string }) {
 }
 ```
 
-- [ ] **Step 3: Wire the route**
+- [x] **Step 3: Wire the route**
 
 In `apps/web/src/router.tsx`:
 - Add import: `import { StockDetailPage } from '@/features/stock/StockDetailPage';`
@@ -1787,7 +1787,7 @@ const stockDetailRoute = createRoute({
 ```
 - Add `stockDetailRoute` to the `appRoute.addChildren([...])` array. **Order matters:** keep `stocksAddRoute` (`/stocks/add`) before `stockDetailRoute` (`/stocks/$symbol`) so the literal path wins over the param.
 
-- [ ] **Step 4: Checkpoint (no git)**
+- [x] **Step 4: Checkpoint (no git)**
 
 Run: `pnpm --filter @finfolio/web typecheck`
 Expected: clean.
@@ -1796,9 +1796,9 @@ Expected: clean.
 
 ## Final verification
 
-- [ ] **API:** `pnpm --filter @finfolio/api typecheck && pnpm --filter @finfolio/api test`
+- [x] **API:** `pnpm --filter @finfolio/api typecheck && pnpm --filter @finfolio/api test`
   Expected: typecheck clean; `stockMath` + `stock.symbols` + `stock.schema` pass; stock integration skipped (no DB) or passing (with DB).
-- [ ] **Web:** `pnpm --filter @finfolio/web typecheck`
+- [x] **Web:** `pnpm --filter @finfolio/web typecheck`
   Expected: clean.
 - [ ] **Manual smoke (optional, needs DB):** `docker compose up -d db`, `db:push`; login; `/stocks/add` → buy 100 FPT → `/stocks` shows WAVG holding; HOSE 150 → error; open `/stocks/FPT` → candlestick + buy marker; `POST /stocks/prices/refresh` → prices populate; record a `cash_dividend` → "Cổ tức đã nhận" increases.
 
@@ -1806,12 +1806,12 @@ Expected: clean.
 
 ## Acceptance criteria (from spec)
 
-- [ ] WAVG + stock-dividend cost adjustment + cash-dividend income + fees match fixtures. (Task 2)
-- [ ] Sell tax 0.1%, brokerage 0.15%, auto-computed when omitted, overridable. (Tasks 2, 7)
-- [ ] HOSE multiple-of-100 (min 100); others min 1. (Tasks 4, 7, 9)
-- [ ] Sell exceeding holdings → 400. (Tasks 7, 9)
-- [ ] Portfolio groups by symbol with capital P&L + dividend income + %weight + totals. (Tasks 7, 11)
+- [x] WAVG + stock-dividend cost adjustment + cash-dividend income + fees match fixtures. (Task 2)
+- [x] Sell tax 0.1%, brokerage 0.15%, auto-computed when omitted, overridable. (Tasks 2, 7)
+- [x] HOSE multiple-of-100 (min 100); others min 1. (Tasks 4, 7, 9)
+- [x] Sell exceeding holdings → 400. (Tasks 7, 9)
+- [x] Portfolio groups by symbol with capital P&L + dividend income + %weight + totals. (Tasks 7, 11)
 - [ ] `/stocks`, `/stocks/add`, `/stocks/$symbol` (candlestick + markers) functional. (Tasks 11–13)
-- [ ] Scheduler refreshes stock prices when enabled; manual refresh + stale flag work. (Tasks 5–8)
-- [ ] `pnpm --filter @finfolio/api test` green; engine tests pass without a DB. (Tasks 2–4, 9)
+- [x] Scheduler refreshes stock prices when enabled; manual refresh + stale flag work. (Tasks 5–8)
+- [x] `pnpm --filter @finfolio/api test` green; engine tests pass without a DB. (Tasks 2–4, 9)
 ```

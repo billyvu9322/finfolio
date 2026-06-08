@@ -26,9 +26,9 @@
 
 **Files:** Modify `apps/web/package.json`
 
-- [ ] **Step 1:** Add `"recharts": "^2.13.3"` to `dependencies`.
-- [ ] **Step 2:** Run `pnpm install` — expect no errors.
-- [ ] **Step 3: Checkpoint:** `pnpm --filter @finfolio/web typecheck` — clean.
+- [x] **Step 1:** Add `"recharts": "^2.13.3"` to `dependencies`.
+- [x] **Step 2:** Run `pnpm install` — expect no errors.
+- [x] **Step 3: Checkpoint:** `pnpm --filter @finfolio/web typecheck` — clean.
 
 ---
 
@@ -40,7 +40,7 @@
 - Create: `apps/api/src/modules/dashboard/breakdown.ts`
 - Create: `apps/api/src/modules/dashboard/breakdown.test.ts`
 
-- [ ] **Step 1: Write failing tests**
+- [x] **Step 1: Write failing tests**
 
 Create `apps/api/src/lib/csv.test.ts`:
 ```ts
@@ -89,7 +89,7 @@ describe('computeBreakdown', () => {
 Run: `pnpm --filter @finfolio/api test csv breakdown`
 Expected: FAIL (modules missing).
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 Create `apps/api/src/lib/csv.ts`:
 ```ts
@@ -122,12 +122,12 @@ export function computeBreakdown(
 }
 ```
 
-- [ ] **Step 4: Run — pass**
+- [x] **Step 4: Run — pass**
 
 Run: `pnpm --filter @finfolio/api test csv breakdown`
 Expected: all passed.
 
-- [ ] **Step 5: Checkpoint:** `pnpm --filter @finfolio/api typecheck` — clean.
+- [x] **Step 5: Checkpoint:** `pnpm --filter @finfolio/api typecheck` — clean.
 
 ---
 
@@ -135,7 +135,7 @@ Expected: all passed.
 
 **Files:** Create `apps/api/src/modules/dashboard/aggregator.ts`
 
-- [ ] **Step 1: Implement**
+- [x] **Step 1: Implement**
 
 Create `apps/api/src/modules/dashboard/aggregator.ts`:
 ```ts
@@ -217,7 +217,7 @@ export async function getAssetSummaries(userId: string): Promise<AssetSummary[]>
 }
 ```
 
-- [ ] **Step 2: Checkpoint:** `pnpm --filter @finfolio/api typecheck` — clean.
+- [x] **Step 2: Checkpoint:** `pnpm --filter @finfolio/api typecheck` — clean.
 
 ---
 
@@ -225,7 +225,7 @@ export async function getAssetSummaries(userId: string): Promise<AssetSummary[]>
 
 **Files:** Create `apps/api/src/modules/dashboard/dashboard.service.ts`
 
-- [ ] **Step 1: Implement**
+- [x] **Step 1: Implement**
 
 Create `apps/api/src/modules/dashboard/dashboard.service.ts`:
 ```ts
@@ -393,7 +393,7 @@ export const dashboardService = {
 };
 ```
 
-- [ ] **Step 2: Checkpoint:** `pnpm --filter @finfolio/api typecheck` — clean.
+- [x] **Step 2: Checkpoint:** `pnpm --filter @finfolio/api typecheck` — clean.
 
 ---
 
@@ -403,7 +403,7 @@ export const dashboardService = {
 - Create: `apps/api/src/modules/dashboard/snapshot.job.ts`
 - Modify: `apps/api/src/plugins/scheduler.ts`
 
-- [ ] **Step 1: Job**
+- [x] **Step 1: Job**
 
 Create `apps/api/src/modules/dashboard/snapshot.job.ts`:
 ```ts
@@ -421,7 +421,7 @@ export async function snapshotAllUsers(): Promise<number> {
 }
 ```
 
-- [ ] **Step 2: Register daily cron**
+- [x] **Step 2: Register daily cron**
 
 In `apps/api/src/plugins/scheduler.ts`:
 - Add import: `import { snapshotAllUsers } from '../modules/dashboard/snapshot.job.js';`
@@ -435,7 +435,7 @@ In `apps/api/src/plugins/scheduler.ts`:
   fastify.addHook('onClose', async () => snapshotTask.stop());
 ```
 
-- [ ] **Step 3: Checkpoint:** `pnpm --filter @finfolio/api typecheck` — clean.
+- [x] **Step 3: Checkpoint:** `pnpm --filter @finfolio/api typecheck` — clean.
 
 ---
 
@@ -443,7 +443,7 @@ In `apps/api/src/plugins/scheduler.ts`:
 
 **Files:** Modify `apps/api/src/modules/dashboard/dashboard.routes.ts`
 
-- [ ] **Step 1: Replace**
+- [x] **Step 1: Replace**
 
 Replace the entire contents of `apps/api/src/modules/dashboard/dashboard.routes.ts`:
 ```ts
@@ -555,7 +555,7 @@ export const dashboardRoutes: FastifyPluginAsyncZod = async (fastify) => {
 };
 ```
 
-- [ ] **Step 2: Checkpoint:** `pnpm --filter @finfolio/api typecheck` — clean.
+- [x] **Step 2: Checkpoint:** `pnpm --filter @finfolio/api typecheck` — clean.
 
 ---
 
@@ -563,7 +563,7 @@ export const dashboardRoutes: FastifyPluginAsyncZod = async (fastify) => {
 
 **Files:** Create `apps/api/src/modules/reports/reports.service.ts`
 
-- [ ] **Step 1: Implement**
+- [x] **Step 1: Implement**
 
 Create `apps/api/src/modules/reports/reports.service.ts`:
 ```ts
@@ -684,7 +684,7 @@ export const reportsService = {
 };
 ```
 
-- [ ] **Step 2: Checkpoint:** `pnpm --filter @finfolio/api typecheck` — clean.
+- [x] **Step 2: Checkpoint:** `pnpm --filter @finfolio/api typecheck` — clean.
 
 ---
 
@@ -692,7 +692,7 @@ export const reportsService = {
 
 **Files:** Modify `apps/api/src/modules/reports/report.routes.ts`
 
-- [ ] **Step 1: Replace**
+- [x] **Step 1: Replace**
 
 Replace the entire contents of `apps/api/src/modules/reports/report.routes.ts`:
 ```ts
@@ -778,7 +778,7 @@ export const reportRoutes: FastifyPluginAsyncZod = async (fastify) => {
 
 > Note: the `/export/csv` route intentionally has no `response` schema (it returns a raw CSV string, not JSON) so the Zod serializer does not interfere.
 
-- [ ] **Step 2: Checkpoint:** `pnpm --filter @finfolio/api typecheck` — clean.
+- [x] **Step 2: Checkpoint:** `pnpm --filter @finfolio/api typecheck` — clean.
 
 ---
 
@@ -786,7 +786,7 @@ export const reportRoutes: FastifyPluginAsyncZod = async (fastify) => {
 
 **Files:** Create `apps/api/src/modules/dashboard/dashboard.routes.integration.test.ts`
 
-- [ ] **Step 1: Write the gated test**
+- [x] **Step 1: Write the gated test**
 
 ```ts
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
@@ -850,8 +850,8 @@ describe.skipIf(!hasDb)('dashboard + reports (integration)', () => {
 });
 ```
 
-- [ ] **Step 2: Run (no DB → skipped):** `pnpm --filter @finfolio/api test` — pure tests pass; integration skipped.
-- [ ] **Step 3: Checkpoint:** `pnpm --filter @finfolio/api typecheck` — clean.
+- [x] **Step 2: Run (no DB → skipped):** `pnpm --filter @finfolio/api test` — pure tests pass; integration skipped.
+- [x] **Step 3: Checkpoint:** `pnpm --filter @finfolio/api typecheck` — clean.
 
 ---
 
@@ -861,7 +861,7 @@ describe.skipIf(!hasDb)('dashboard + reports (integration)', () => {
 - Create: `apps/web/src/features/dashboard/dashboard.api.ts`
 - Create: `apps/web/src/features/reports/reports.api.ts`
 
-- [ ] **Step 1: dashboard.api**
+- [x] **Step 1: dashboard.api**
 
 Create `apps/web/src/features/dashboard/dashboard.api.ts`:
 ```ts
@@ -896,7 +896,7 @@ export const createSnapshot = async () =>
   (await api.post<{ snapshotDate: string }>('/dashboard/snapshot')).data;
 ```
 
-- [ ] **Step 2: reports.api (with CSV blob download)**
+- [x] **Step 2: reports.api (with CSV blob download)**
 
 Create `apps/web/src/features/reports/reports.api.ts`:
 ```ts
@@ -933,7 +933,7 @@ export async function exportCsv(module: 'gold' | 'stock', from?: string, to?: st
 }
 ```
 
-- [ ] **Step 3: Checkpoint:** `pnpm --filter @finfolio/web typecheck` — clean.
+- [x] **Step 3: Checkpoint:** `pnpm --filter @finfolio/web typecheck` — clean.
 
 ---
 
@@ -943,7 +943,7 @@ export async function exportCsv(module: 'gold' | 'stock', from?: string, to?: st
 - Create: `apps/web/src/features/dashboard/DashboardPage.tsx`
 - Modify: `apps/web/src/router.tsx`
 
-- [ ] **Step 1: Create the page**
+- [x] **Step 1: Create the page**
 
 Create `apps/web/src/features/dashboard/DashboardPage.tsx`:
 ```tsx
@@ -1086,7 +1086,7 @@ function Kpi({ label, value, tone }: { label: string; value: string; tone?: 'pro
 }
 ```
 
-- [ ] **Step 2: Wire the route**
+- [x] **Step 2: Wire the route**
 
 In `apps/web/src/router.tsx`:
 - Add import: `import { DashboardPage } from '@/features/dashboard/DashboardPage';`
@@ -1099,7 +1099,7 @@ const dashboardRoute = createRoute({
 });
 ```
 
-- [ ] **Step 3: Checkpoint:** `pnpm --filter @finfolio/web typecheck` — clean.
+- [x] **Step 3: Checkpoint:** `pnpm --filter @finfolio/web typecheck` — clean.
 
 ---
 
@@ -1109,7 +1109,7 @@ const dashboardRoute = createRoute({
 - Create: `apps/web/src/features/reports/ReportsPage.tsx`
 - Modify: `apps/web/src/router.tsx`
 
-- [ ] **Step 1: Create the page**
+- [x] **Step 1: Create the page**
 
 Create `apps/web/src/features/reports/ReportsPage.tsx`:
 ```tsx
@@ -1230,7 +1230,7 @@ export function ReportsPage() {
 }
 ```
 
-- [ ] **Step 2: Wire the route**
+- [x] **Step 2: Wire the route**
 
 In `apps/web/src/router.tsx`:
 - Add import: `import { ReportsPage } from '@/features/reports/ReportsPage';`
@@ -1243,27 +1243,27 @@ const reportsRoute = createRoute({
 });
 ```
 
-- [ ] **Step 3: Checkpoint:** `pnpm --filter @finfolio/web typecheck` — clean.
+- [x] **Step 3: Checkpoint:** `pnpm --filter @finfolio/web typecheck` — clean.
 
 ---
 
 ## Final verification
 
-- [ ] **API:** `pnpm --filter @finfolio/api typecheck && pnpm --filter @finfolio/api test`
+- [x] **API:** `pnpm --filter @finfolio/api typecheck && pnpm --filter @finfolio/api test`
   Expected: typecheck clean; `csv` + `breakdown` pass; dashboard integration skipped (no DB) or passing (with DB).
-- [ ] **Web:** `pnpm --filter @finfolio/web typecheck` — clean.
+- [x] **Web:** `pnpm --filter @finfolio/web typecheck` — clean.
 - [ ] **Manual smoke (needs DB):** `docker compose up -d db`, `db:push`; login; add a gold buy + stock buy; `/dashboard` shows AUM = sum, donut with gold+stock, growth point after "Chụp snapshot"; `/reports` shows P&L by asset, Export CSV downloads, snapshot date returns the row.
 
 ---
 
 ## Acceptance criteria (from spec)
 
-- [ ] `/dashboard/summary` AUM/invested/P&L = sum of Gold + Stock; breakdown % sums to 100. (Tasks 3–4, 6)
-- [ ] Snapshot job + `POST /dashboard/snapshot` upsert one row/user/day. (Tasks 4–5)
-- [ ] `/dashboard/growth` returns snapshot series or a single live point. (Task 4)
-- [ ] Recent transactions merge gold + stock newest-first; top holdings/movers correct. (Tasks 4, 6)
-- [ ] CSV export valid UTF-8 with BOM for the chosen module + range. (Tasks 2, 7–8)
-- [ ] `/reports/snapshot?date=` returns past-date state. (Tasks 7–8)
-- [ ] `/dashboard` + `/reports` functional with Recharts. (Tasks 11–12)
-- [ ] `pnpm --filter @finfolio/api test` green; pure tests pass without a DB. (Tasks 2, 9)
+- [x] `/dashboard/summary` AUM/invested/P&L = sum of Gold + Stock; breakdown % sums to 100. (Tasks 3–4, 6)
+- [x] Snapshot job + `POST /dashboard/snapshot` upsert one row/user/day. (Tasks 4–5)
+- [x] `/dashboard/growth` returns snapshot series or a single live point. (Task 4)
+- [x] Recent transactions merge gold + stock newest-first; top holdings/movers correct. (Tasks 4, 6)
+- [x] CSV export valid UTF-8 with BOM for the chosen module + range. (Tasks 2, 7–8)
+- [x] `/reports/snapshot?date=` returns past-date state. (Tasks 7–8)
+- [x] `/dashboard` + `/reports` functional with Recharts. (Tasks 11–12)
+- [x] `pnpm --filter @finfolio/api test` green; pure tests pass without a DB. (Tasks 2, 9)
 ```

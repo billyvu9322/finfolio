@@ -5,7 +5,7 @@
 ## Goal
 
 Everything from phases 1–5 hardened to the SRS non-functional bar and deployed single-host
-via Docker Compose + nginx, with docs complete.
+via Docker Compose + Cloudflare Tunnel, with docs complete.
 
 ## Delivers (SRS)
 
@@ -49,17 +49,17 @@ Production runs on a Docker VM that already has **PostgreSQL** and a **Cloudflar
 (ingress + TLS). So: **no nginx** service, and **no bundled Postgres** — the API connects to the
 existing PG via `DATABASE_URL`.
 
-- [ ] `docker-compose.prod.yml`: builds + runs **api + web only** (no `db`, no `nginx`); api reads `DATABASE_URL` pointing at the server's existing PostgreSQL; Cloudflare Tunnel routes to the web/api ports.
-- [ ] Production `.env` (prod): `DATABASE_URL` = existing PG, `JWT_SECRET`, `CORS_ORIGIN` = the tunnel hostname, `VITE_API_BASE_URL` = the tunnel API URL, `ENABLE_PRICE_SCHEDULER=true`.
-- [ ] **Build artifact (zip):** a `scripts/build-release.sh` that produces a `finfolio-release.zip` containing the source needed to build, `docker-compose.prod.yml`, and `.env.example` — to copy onto the prod VM.
-- [ ] **Release flow on the VM:** unzip → `docker compose -f docker-compose.prod.yml build` → run DB migrations against the existing PG (`pnpm --filter @finfolio/api db:migrate` or a one-shot migrate container) → `docker compose -f docker-compose.prod.yml up -d`.
+- [x] `docker-compose.prod.yml`: builds + runs **api + web only** (no `db`, no `nginx`); api reads `DATABASE_URL` pointing at the server's existing PostgreSQL; Cloudflare Tunnel routes to the web/api ports.
+- [x] Production `.env` (prod): `DATABASE_URL` = existing PG, `JWT_SECRET`, `CORS_ORIGIN` = the tunnel hostname, `VITE_API_BASE_URL` = the tunnel API URL, `ENABLE_PRICE_SCHEDULER=true`.
+- [x] **Build artifact (zip):** a `scripts/build-release.sh` that produces a `finfolio-release.zip` containing the source needed to build, `docker-compose.prod.yml`, and `.env.example` — to copy onto the prod VM.
+- [x] **Release flow on the VM:** unzip → `docker compose --env-file .env.prod -f docker-compose.prod.yml build` → run DB migrations against the existing PG (`pnpm --filter @finfolio/api db:migrate` or a one-shot migrate container) → `docker compose --env-file .env.prod -f docker-compose.prod.yml up -d`.
 - [ ] Confirm the Cloudflare Tunnel maps the public hostname → the web (and `/v1` → api) container ports; no nginx/TLS config needed in-repo.
 - [ ] Swagger UI complete + accurate; README run/deploy steps verified (incl. the zip + migrate + compose-up flow).
-- [ ] Release notes / changelog for MVP v1.0.
+- [x] Release notes / changelog for MVP v1.0.
 
 ## Acceptance criteria (launch gate)
 
 - [ ] All NFR thresholds met and measured (not assumed).
 - [ ] CI green; coverage gate ≥70%.
-- [ ] On the prod VM: unzip release → build → migrate against existing PG → `docker compose -f docker-compose.prod.yml up -d` → app reachable via the Cloudflare Tunnel hostname (HTTPS terminated by Cloudflare, no nginx).
+- [ ] On the prod VM: unzip release → build → migrate against existing PG → `docker compose --env-file .env.prod -f docker-compose.prod.yml up -d` → app reachable via the Cloudflare Tunnel hostname (HTTPS terminated by Cloudflare, no nginx).
 - [ ] Security review signed off; backups verified by a test restore.

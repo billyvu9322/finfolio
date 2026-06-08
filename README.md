@@ -95,6 +95,34 @@ docker compose up --build
 # web → http://localhost:8080 · api → http://localhost:3000
 ```
 
+## Deploy (production)
+
+Production runs on a Docker VM that already has **PostgreSQL** and a **Cloudflare Tunnel**
+(ingress + TLS). The app ships as a zip; there is **no nginx** and **no bundled Postgres**.
+
+```bash
+# 1. On a dev machine: build the release zip
+sh scripts/build-release.sh            # -> dist/finfolio-release.zip
+
+# 2. Copy dist/finfolio-release.zip to the VM, then on the VM:
+unzip finfolio-release.zip -d finfolio && cd finfolio
+cp .env.prod.example .env.prod         # edit: DATABASE_URL (existing PG), JWT_SECRET, hostnames
+
+# 3. Build, migrate the existing DB, start
+docker compose --env-file .env.prod -f docker-compose.prod.yml build
+sh scripts/migrate.sh                  # runs drizzle migrations against DATABASE_URL
+docker compose --env-file .env.prod -f docker-compose.prod.yml up -d
+```
+
+The Cloudflare Tunnel maps the public hostname to `web` (`127.0.0.1:8080`) and `/v1/*` to `api`
+(`127.0.0.1:3000`). TLS is terminated at Cloudflare; containers bind localhost only.
+
+## Scripts
+
+- `scripts/build-release.sh` — package a deployable `dist/finfolio-release.zip`.
+- `scripts/migrate.sh` — apply DB migrations using `.env.prod`.
+- `scripts/backup.sh` — `pg_dump` the external PG (7-day retention); wire to host cron.
+
 ## Next (per SRS roadmap)
 
 Implement the stubbed modules: Gold (Sprint 2), Stock (Sprint 3),

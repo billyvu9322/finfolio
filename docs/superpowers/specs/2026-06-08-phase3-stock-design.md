@@ -173,14 +173,14 @@ Prices:    cron */5 → SeedMarketDataProvider.fetchStockPrices → upsert price
 
 ## Acceptance criteria
 
-- [ ] WAVG, stock-dividend cost adjustment, cash-dividend income, and fees match hand-computed fixtures.
-- [ ] Sell tax = 0.1% of sale value; buy/sell brokerage = 0.15%; auto-computed when omitted, overridable.
-- [ ] HOSE buy/sell quantity must be a multiple of 100 (min 100); other exchanges min 1.
-- [ ] Sell exceeding holdings → 400.
-- [ ] `GET /stocks/portfolio` groups by symbol with capital P&L + dividend income + %weight + totals.
+- [x] WAVG, stock-dividend cost adjustment, cash-dividend income, and fees match hand-computed fixtures.
+- [x] Sell tax = 0.1% of sale value; buy/sell brokerage = 0.15%; auto-computed when omitted, overridable.
+- [x] HOSE buy/sell quantity must be a multiple of 100 (min 100); other exchanges min 1.
+- [x] Sell exceeding holdings → 400.
+- [x] `GET /stocks/portfolio` groups by symbol with capital P&L + dividend income + %weight + totals.
 - [ ] `/stocks`, `/stocks/add`, `/stocks/$symbol` (candlestick + markers) functional against the API.
-- [ ] Scheduler refreshes stock prices when enabled; manual refresh works; stale flag shown.
-- [ ] `pnpm --filter @finfolio/api test` green; engine tests pass without a DB.
+- [x] Scheduler refreshes stock prices when enabled; manual refresh works; stale flag shown.
+- [x] `pnpm --filter @finfolio/api test` green; engine tests pass without a DB.
 
 ## Out of scope (restated)
 

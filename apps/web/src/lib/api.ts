@@ -29,7 +29,7 @@ api.interceptors.response.use(
     const isAuthCall = original?.url?.includes('/auth/');
 
     if (error.response?.status === 401 && original && !isAuthCall && !(original as never)['_retry']) {
-      (original as Record<string, unknown>)._retry = true;
+      (original as unknown as Record<string, unknown>)._retry = true;
       try {
         refreshing ??= api
           .post<{ accessToken: string }>('/auth/refresh')

@@ -25,7 +25,7 @@
 - Create: `apps/api/src/modules/crypto/cryptoMath.ts`
 - Create: `apps/api/src/modules/crypto/cryptoMath.test.ts`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `apps/api/src/modules/crypto/cryptoMath.test.ts`:
 ```ts
@@ -107,7 +107,7 @@ describe('unrealizedPnl', () => {
 Run: `pnpm --filter @finfolio/api test cryptoMath`
 Expected: FAIL — module not found.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 Create `apps/api/src/modules/crypto/cryptoMath.ts`:
 ```ts
@@ -183,12 +183,12 @@ export function unrealizedPnl(
 }
 ```
 
-- [ ] **Step 4: Run — pass**
+- [x] **Step 4: Run — pass**
 
 Run: `pnpm --filter @finfolio/api test cryptoMath`
 Expected: all passed.
 
-- [ ] **Step 5: Checkpoint:** `pnpm --filter @finfolio/api typecheck && pnpm --filter @finfolio/api test` — clean + green.
+- [x] **Step 5: Checkpoint:** `pnpm --filter @finfolio/api typecheck && pnpm --filter @finfolio/api test` — clean + green.
 
 ---
 
@@ -198,7 +198,7 @@ Expected: all passed.
 - Create: `apps/api/src/modules/crypto/crypto.coins.ts`
 - Create: `apps/api/src/modules/crypto/crypto.coins.test.ts`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `apps/api/src/modules/crypto/crypto.coins.test.ts`:
 ```ts
@@ -222,7 +222,7 @@ describe('searchCoins', () => {
 
 - [ ] **Step 2: Run — fail:** `pnpm --filter @finfolio/api test crypto.coins` → module not found.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 Create `apps/api/src/modules/crypto/crypto.coins.ts`:
 ```ts
@@ -269,8 +269,8 @@ export function searchCoins(q: string, limit = 10): CoinEntry[] {
 }
 ```
 
-- [ ] **Step 4: Run — pass:** `pnpm --filter @finfolio/api test crypto.coins`.
-- [ ] **Step 5: Checkpoint:** `pnpm --filter @finfolio/api typecheck`.
+- [x] **Step 4: Run — pass:** `pnpm --filter @finfolio/api test crypto.coins`.
+- [x] **Step 5: Checkpoint:** `pnpm --filter @finfolio/api typecheck`.
 
 ---
 
@@ -280,7 +280,7 @@ export function searchCoins(q: string, limit = 10): CoinEntry[] {
 - Create: `apps/api/src/modules/crypto/crypto.schema.ts`
 - Create: `apps/api/src/modules/crypto/crypto.schema.test.ts`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `apps/api/src/modules/crypto/crypto.schema.test.ts`:
 ```ts
@@ -329,7 +329,7 @@ describe('updateCryptoTxSchema', () => {
 
 - [ ] **Step 2: Run — fail:** `pnpm --filter @finfolio/api test crypto.schema`.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 Create `apps/api/src/modules/crypto/crypto.schema.ts`:
 ```ts
@@ -446,8 +446,8 @@ export type UpdateCryptoTxBody = z.infer<typeof updateCryptoTxSchema>;
 export type ListCryptoTxQuery = z.infer<typeof listCryptoTxQuerySchema>;
 ```
 
-- [ ] **Step 4: Run — pass:** `pnpm --filter @finfolio/api test crypto.schema`.
-- [ ] **Step 5: Checkpoint:** `pnpm --filter @finfolio/api typecheck`.
+- [x] **Step 4: Run — pass:** `pnpm --filter @finfolio/api test crypto.schema`.
+- [x] **Step 5: Checkpoint:** `pnpm --filter @finfolio/api typecheck`.
 
 ---
 
@@ -457,7 +457,7 @@ export type ListCryptoTxQuery = z.infer<typeof listCryptoTxQuerySchema>;
 - Create: `apps/api/src/modules/crypto/market/CryptoDataProvider.ts`
 - Create: `apps/api/src/modules/crypto/market/SeedCryptoDataProvider.ts`
 
-- [ ] **Step 1: Interface**
+- [x] **Step 1: Interface**
 
 Create `apps/api/src/modules/crypto/market/CryptoDataProvider.ts`:
 ```ts
@@ -476,7 +476,7 @@ export interface CryptoDataProvider {
 }
 ```
 
-- [ ] **Step 2: Seed provider (deterministic)**
+- [x] **Step 2: Seed provider (deterministic)**
 
 Create `apps/api/src/modules/crypto/market/SeedCryptoDataProvider.ts`:
 ```ts
@@ -519,7 +519,7 @@ export class SeedCryptoDataProvider implements CryptoDataProvider {
 }
 ```
 
-- [ ] **Step 3: Checkpoint:** `pnpm --filter @finfolio/api typecheck`.
+- [x] **Step 3: Checkpoint:** `pnpm --filter @finfolio/api typecheck`.
 
 ---
 
@@ -527,7 +527,7 @@ export class SeedCryptoDataProvider implements CryptoDataProvider {
 
 **Files:** Create `apps/api/src/modules/crypto/crypto.service.ts`
 
-- [ ] **Step 1: Implement**
+- [x] **Step 1: Implement**
 
 Create `apps/api/src/modules/crypto/crypto.service.ts`:
 ```ts
@@ -817,7 +817,7 @@ export const cryptoService = {
 };
 ```
 
-- [ ] **Step 2: Checkpoint:** `pnpm --filter @finfolio/api typecheck` — clean. (If a Drizzle column name mismatches, align to `db/schema/crypto-transactions.ts`.)
+- [x] **Step 2: Checkpoint:** `pnpm --filter @finfolio/api typecheck` — clean. (If a Drizzle column name mismatches, align to `db/schema/crypto-transactions.ts`.)
 
 ---
 
@@ -825,7 +825,7 @@ export const cryptoService = {
 
 **Files:** Modify `apps/api/src/modules/crypto/crypto.routes.ts`
 
-- [ ] **Step 1: Replace the stub**
+- [x] **Step 1: Replace the stub**
 
 Replace the entire contents of `apps/api/src/modules/crypto/crypto.routes.ts`:
 ```ts
@@ -932,7 +932,7 @@ export const cryptoRoutes: FastifyPluginAsyncZod = async (fastify) => {
 };
 ```
 
-- [ ] **Step 2: Checkpoint:** `pnpm --filter @finfolio/api typecheck`.
+- [x] **Step 2: Checkpoint:** `pnpm --filter @finfolio/api typecheck`.
 
 ---
 
@@ -940,7 +940,7 @@ export const cryptoRoutes: FastifyPluginAsyncZod = async (fastify) => {
 
 **Files:** Create `apps/api/src/modules/crypto/crypto.routes.integration.test.ts`
 
-- [ ] **Step 1: Write the gated test**
+- [x] **Step 1: Write the gated test**
 
 ```ts
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
@@ -1030,8 +1030,8 @@ describe.skipIf(!hasDb)('crypto routes (integration)', () => {
 });
 ```
 
-- [ ] **Step 2: Run (no DB → skipped):** `pnpm --filter @finfolio/api test` — pure tests pass; integration skipped.
-- [ ] **Step 3: Checkpoint:** `pnpm --filter @finfolio/api typecheck`.
+- [x] **Step 2: Run (no DB → skipped):** `pnpm --filter @finfolio/api test` — pure tests pass; integration skipped.
+- [x] **Step 3: Checkpoint:** `pnpm --filter @finfolio/api typecheck`.
 
 ---
 
@@ -1039,7 +1039,7 @@ describe.skipIf(!hasDb)('crypto routes (integration)', () => {
 
 **Files:** Create `apps/web/src/features/crypto/crypto.api.ts`
 
-- [ ] **Step 1: Implement**
+- [x] **Step 1: Implement**
 
 Create `apps/web/src/features/crypto/crypto.api.ts`:
 ```ts
@@ -1080,7 +1080,7 @@ export const getCryptoPrices = async (fx?: number) =>
   (await api.get<{ quotes: unknown[]; fxRate: number }>('/crypto/prices', { params: { fx } })).data;
 ```
 
-- [ ] **Step 2: Checkpoint:** `pnpm --filter @finfolio/web typecheck`.
+- [x] **Step 2: Checkpoint:** `pnpm --filter @finfolio/web typecheck`.
 
 ---
 
@@ -1090,7 +1090,7 @@ export const getCryptoPrices = async (fx?: number) =>
 - Create: `apps/web/src/features/crypto/CryptoPortfolioPage.tsx`
 - Modify: `apps/web/src/router.tsx`
 
-- [ ] **Step 1: Create the page**
+- [x] **Step 1: Create the page**
 
 Create `apps/web/src/features/crypto/CryptoPortfolioPage.tsx`:
 ```tsx
@@ -1211,7 +1211,7 @@ function Kpi({ label, value, tone }: { label: string; value: string; tone?: 'pro
 }
 ```
 
-- [ ] **Step 2: Wire the route**
+- [x] **Step 2: Wire the route**
 
 In `apps/web/src/router.tsx`:
 - Add import: `import { CryptoPortfolioPage } from '@/features/crypto/CryptoPortfolioPage';`
@@ -1224,7 +1224,7 @@ const cryptoRoute = createRoute({
 });
 ```
 
-- [ ] **Step 3: Checkpoint:** `pnpm --filter @finfolio/web typecheck`.
+- [x] **Step 3: Checkpoint:** `pnpm --filter @finfolio/web typecheck`.
 
 ---
 
@@ -1234,7 +1234,7 @@ const cryptoRoute = createRoute({
 - Create: `apps/web/src/features/crypto/CryptoAddPage.tsx`
 - Modify: `apps/web/src/router.tsx`
 
-- [ ] **Step 1: Create the form**
+- [x] **Step 1: Create the form**
 
 Create `apps/web/src/features/crypto/CryptoAddPage.tsx`:
 ```tsx
@@ -1395,7 +1395,7 @@ export function CryptoAddPage() {
 }
 ```
 
-- [ ] **Step 2: Wire the route**
+- [x] **Step 2: Wire the route**
 
 In `apps/web/src/router.tsx`:
 - Add import: `import { CryptoAddPage } from '@/features/crypto/CryptoAddPage';`
@@ -1408,7 +1408,7 @@ const cryptoAddRoute = createRoute({
 });
 ```
 
-- [ ] **Step 3: Checkpoint:** `pnpm --filter @finfolio/web typecheck`.
+- [x] **Step 3: Checkpoint:** `pnpm --filter @finfolio/web typecheck`.
 
 ---
 
@@ -1453,20 +1453,20 @@ export const assetModules: AssetModule[] = [goldModule, stockModule, cryptoModul
 
 ## Final verification
 
-- [ ] **API:** `pnpm --filter @finfolio/api typecheck && pnpm --filter @finfolio/api test`
+- [x] **API:** `pnpm --filter @finfolio/api typecheck && pnpm --filter @finfolio/api test`
   Expected: typecheck clean; `cryptoMath` + `crypto.coins` + `crypto.schema` pass; crypto integration skipped (no DB) or passing (with DB).
-- [ ] **Web:** `pnpm --filter @finfolio/web typecheck` — clean.
+- [x] **Web:** `pnpm --filter @finfolio/web typecheck` — clean.
 - [ ] **Manual smoke (needs DB):** `docker compose up -d db`, `db:push`; login; `/crypto/add` buy 0.5 BTC (Binance) → `/crypto` shows holding (VND+USD); buy BTC on Ledger → 2 positions; Swap BTC→ETH → both legs appear; FX override changes USD column; sell > held → error.
 
 ---
 
 ## Acceptance criteria (from spec)
 
-- [ ] WAVG (VND) + fee normalization (VND/USDT/COIN) + P&L match fixtures. (Task 1)
-- [ ] Holdings group by (coin, wallet); a coin in two wallets = two positions. (Tasks 5, 7, 9)
-- [ ] Swap creates atomic sell(source) + buy(dest) by `valueVnd`; portfolio reflects both. (Tasks 5–7)
-- [ ] Sell / swap-source exceeding wallet holdings → 400. (Tasks 5, 7)
-- [ ] USDT price + FX override convert correctly; USD + VND + 24h shown. (Tasks 5, 9)
-- [ ] `/crypto`, `/crypto/add` (buy/sell/swap) functional. (Tasks 9–10)
-- [ ] `pnpm --filter @finfolio/api test` green; engine tests pass without a DB. (Tasks 1–3, 7)
+- [x] WAVG (VND) + fee normalization (VND/USDT/COIN) + P&L match fixtures. (Task 1)
+- [x] Holdings group by (coin, wallet); a coin in two wallets = two positions. (Tasks 5, 7, 9)
+- [x] Swap creates atomic sell(source) + buy(dest) by `valueVnd`; portfolio reflects both. (Tasks 5–7)
+- [x] Sell / swap-source exceeding wallet holdings → 400. (Tasks 5, 7)
+- [x] USDT price + FX override convert correctly; USD + VND + 24h shown. (Tasks 5, 9)
+- [x] `/crypto`, `/crypto/add` (buy/sell/swap) functional. (Tasks 9–10)
+- [x] `pnpm --filter @finfolio/api test` green; engine tests pass without a DB. (Tasks 1–3, 7)
 ```

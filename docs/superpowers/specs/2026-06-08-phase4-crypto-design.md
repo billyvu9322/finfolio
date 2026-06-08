@@ -152,13 +152,13 @@ When this lands, add a `cryptoModule` adapter to `apps/api/src/modules/dashboard
 
 ## Acceptance criteria
 
-- [ ] WAVG (VND), fee normalization (VND/USDT/COIN), and P&L match fixtures.
-- [ ] Holdings group by (coin, wallet); a coin in two wallets yields two positions.
-- [ ] Swap creates an atomic sell(source) + buy(dest) pair valued by `valueVnd`; portfolio reflects both.
-- [ ] Sell (and swap source) exceeding holdings → 400.
-- [ ] USDT price + USD/VND override convert correctly; portfolio shows USD + VND + 24h change.
-- [ ] `/crypto`, `/crypto/add` (buy/sell/swap) functional against the API.
-- [ ] `pnpm --filter @finfolio/api test` green; engine tests pass without a DB.
+- [x] WAVG (VND), fee normalization (VND/USDT/COIN), and P&L match fixtures.
+- [x] Holdings group by (coin, wallet); a coin in two wallets yields two positions.
+- [x] Swap creates an atomic sell(source) + buy(dest) pair valued by `valueVnd`; portfolio reflects both.
+- [x] Sell (and swap source) exceeding holdings → 400.
+- [x] USDT price + USD/VND override convert correctly; portfolio shows USD + VND + 24h change.
+- [x] `/crypto`, `/crypto/add` (buy/sell/swap) functional against the API.
+- [x] `pnpm --filter @finfolio/api test` green; engine tests pass without a DB.
 
 ## Out of scope (restated)
 

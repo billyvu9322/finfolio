@@ -20,6 +20,7 @@ Run from repo root unless noted. Package manager is **pnpm** (workspaces).
 pnpm install
 pnpm dev                                  # api + web in parallel
 docker compose up --build                 # full stack: db + api + web (+nginx)
+# Production: docker-compose.prod.yml runs api + web only (no db, no nginx); a Cloudflare Tunnel fronts it and PostgreSQL is external (DATABASE_URL). Deploy via scripts/build-release.sh -> unzip on VM -> scripts/migrate.sh -> docker compose --env-file .env.prod -f docker-compose.prod.yml up -d.
 
 # API (apps/api)
 pnpm --filter @finfolio/api dev           # tsx watch, http://localhost:3000 (docs at /docs)

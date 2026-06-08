@@ -8,6 +8,7 @@ import { z } from 'zod';
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   API_PORT: z.coerce.number().int().positive().default(3000),
+  LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).optional(),
 
   DATABASE_URL: z.string().url(),
 
@@ -23,6 +24,10 @@ const envSchema = z.object({
   COINGECKO_API_KEY: z.string().optional(),
   EXCHANGERATE_API_KEY: z.string().optional(),
   REDIS_URL: z.string().optional(),
+  ENABLE_PRICE_SCHEDULER: z
+    .string()
+    .optional()
+    .transform((value) => value === 'true' || value === '1'),
 });
 
 const parsed = envSchema.safeParse(process.env);

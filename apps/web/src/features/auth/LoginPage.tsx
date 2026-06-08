@@ -1,4 +1,4 @@
-import { useNavigate } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { useState, type FormEvent } from 'react';
 
 import { login } from './auth.api';
@@ -65,6 +65,10 @@ export function LoginPage() {
         >
           {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
         </button>
+        <div className="mt-4 flex justify-between text-sm">
+          <Link to="/forgot-password" className="text-brand">Quên mật khẩu?</Link>
+          <Link to="/register" className="text-brand">Đăng ký</Link>
+        </div>
       </form>
     </div>
   );

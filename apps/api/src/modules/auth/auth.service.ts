@@ -4,11 +4,12 @@ import bcrypt from 'bcryptjs';
 import { and, eq, isNull } from 'drizzle-orm';
 
 import { db } from '../../db/index.js';
-import { refreshTokens, users, type User } from '../../db/schema/index.js';
-import type { UserPublic } from './auth.schema.js';
+import { passwordResetTokens, refreshTokens, users, type User } from '../../db/schema/index.js';
+import type { ProfileUpdateBody, UserPublic } from './auth.schema.js';
 
 const BCRYPT_COST = 12; // SRS NFR 4.2
 const REFRESH_TTL_DAYS = 30; // FR-AUTH-02
+const RESET_TTL_HOURS = 1; // FR-AUTH-04
 
 export class AuthError extends Error {
   constructor(
@@ -48,6 +49,46 @@ export const authService = {
       .returning();
 
     return toPublic(created!);
+  },
+
+  async updateProfile(userId: string, input: ProfileUpdateBody): Promise<UserPublic> {
+    const [updated] = await db
+      .update(users)
+      .set({ ...input, updatedAt: new Date() })
+      .where(eq(users.id, userId))
+      .returning();
+    if (!updated) {
+      throw new AuthError(401, 'User no longer exists');
+    }
+    return toPublic(updated);
+  },
+
+  async requestPasswordReset(email: string): Promise<{ previewToken?: string }> {
+    const user = await db.query.users.findFirst({ where: eq(users.email, email) });
+    if (!user) return {};
+
+    const token = randomBytes(48).toString('base64url');
+    const expiresAt = new Date(Date.now() + RESET_TTL_HOURS * 60 * 60 * 1000);
+    await db.insert(passwordResetTokens).values({
+      userId: user.id,
+      tokenHash: hashToken(token),
+      expiresAt,
+    });
+
+    return process.env.NODE_ENV === 'production' ? {} : { previewToken: token };
+  },
+
+  async resetPassword(token: string, password: string): Promise<void> {
+    const row = await db.query.passwordResetTokens.findFirst({
+      where: and(eq(passwordResetTokens.tokenHash, hashToken(token)), isNull(passwordResetTokens.usedAt)),
+    });
+    if (!row || row.expiresAt < new Date()) {
+      throw new AuthError(401, 'Invalid or expired reset token');
+    }
+
+    const passwordHash = await bcrypt.hash(password, BCRYPT_COST);
+    await db.update(users).set({ passwordHash, updatedAt: new Date() }).where(eq(users.id, row.userId));
+    await db.update(passwordResetTokens).set({ usedAt: new Date() }).where(eq(passwordResetTokens.id, row.id));
   },
 
   async verifyCredentials(email: string, password: string): Promise<User> {

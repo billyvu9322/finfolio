@@ -145,13 +145,13 @@ Prices:    cron */15 → ManualProvider.fetchGoldPrices → upsert price_cache ;
 
 ## Acceptance criteria
 
-- [ ] DCA & P&L match hand-computed fixtures including partial sells and prorated fees.
+- [x] DCA & P&L match hand-computed fixtures including partial sells and prorated fees.
 - [ ] Unit conversion follows the §10.2 ruling table (1 Lượng = 1 Cây = 10 Chỉ); price normalized to VND/Chỉ.
-- [ ] Sell exceeding current holdings is rejected (400) server-side.
+- [x] Sell exceeding current holdings is rejected (400) server-side.
 - [ ] `GET /gold/portfolio` groups by gold type with correct totals and %weight.
 - [ ] Scheduler (when enabled) populates `price_cache` every 15 min; `GET /gold/prices` shows timestamp + stale flag; manual refresh works.
 - [ ] `/gold` and `/gold/add` are functional against the API; edit/delete recompute on reload.
-- [ ] `pnpm --filter @finfolio/api test` green; engine tests pass without a DB.
+- [x] `pnpm --filter @finfolio/api test` green; engine tests pass without a DB.
 
 ## Out of scope (restated)
 

@@ -47,7 +47,7 @@ Production runs on a Docker VM that already has **PostgreSQL** and a **Cloudflar
 ### Deploy
 - `docker-compose.prod.yml` (repo root): `api` + `web` services only, `restart: unless-stopped`, ports bound to `127.0.0.1`, env from `.env.prod`. No `db`, no `nginx`.
 - `.env.prod.example` (repo root): `DATABASE_URL` (external PG), `JWT_SECRET`, `CORS_ORIGIN`, `VITE_API_BASE_URL`, `ENABLE_PRICE_SCHEDULER=true`, `LOG_LEVEL=info`.
-- `scripts/build-release.sh`: produce `dist/finfolio-release.zip` containing `apps/`, `package.json`, `pnpm-workspace.yaml`, `tsconfig.base.json`, `docker-compose.prod.yml`, `.env.prod.example` (excludes `node_modules`, `.git`, `.docker`, existing `dist`).
+- `scripts/build-release.sh`: produce `dist/finfolio-release.zip` containing `apps/`, `scripts/`, `package.json`, `pnpm-workspace.yaml`, `tsconfig.base.json`, `docker-compose.prod.yml`, `.env.prod.example` (excludes `node_modules`, `.git`, `.docker`, existing `dist`).
 - `scripts/migrate.sh`: load `.env.prod` and run `pnpm --filter @finfolio/api db:migrate`.
 - README "Deploy (production)" section documenting the full VM flow.
 
@@ -80,12 +80,12 @@ Production runs on a Docker VM that already has **PostgreSQL** and a **Cloudflar
 
 ## Acceptance criteria (buildable-now)
 
-- [ ] `test:coverage` runs and produces a report without failing on partial coverage.
+- [x] `test:coverage` runs and produces a report without failing on partial coverage.
 - [ ] `docker-compose.prod.yml` validates, contains only `api` + `web` (no `db`/`nginx`), binds `127.0.0.1`, reads `.env.prod`.
 - [ ] `scripts/build-release.sh` produces `finfolio-release.zip`; `scripts/migrate.sh` and `scripts/backup.sh` pass `sh -n`.
-- [ ] Web routes are lazy-loaded behind Suspense; `build` shows chart libs split out of the entry chunk; both typechecks clean.
-- [ ] a11y: visible focus ring, reduced-motion honored, skip-to-content present, icon buttons labelled.
-- [ ] README Deploy section + CHANGELOG v1.0 + CLAUDE.md prod note written.
+- [x] Web routes are lazy-loaded behind Suspense; `build` shows chart libs split out of the entry chunk; both typechecks clean.
+- [x] a11y: visible focus ring, reduced-motion honored, skip-to-content present, icon buttons labelled.
+- [x] README Deploy section + CHANGELOG v1.0 + CLAUDE.md prod note written.
 
 ## Out of scope (restated)
 
