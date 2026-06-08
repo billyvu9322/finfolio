@@ -1,0 +1,17 @@
+{
+  "name": "finfolio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "FinFolio — Personal Capital Management (MVP scaffold)",
+  "packageManager": "pnpm@9.12.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "pnpm -r --parallel run dev",
+    "build": "pnpm -r run build",
+    "lint": "pnpm -r run lint",
+    "api": "pnpm --filter @finfolio/api",
+    "web": "pnpm --filter @finfolio/web"
+  }
+}
