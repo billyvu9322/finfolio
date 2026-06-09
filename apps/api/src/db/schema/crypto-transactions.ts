@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { pgTable, uuid, varchar, numeric, timestamp, index } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, numeric, timestamp, index, uniqueIndex } from 'drizzle-orm/pg-core';
 
 import { cryptoActionEnum } from './enums.js';
 import { users } from './users.js';
@@ -23,10 +23,17 @@ export const cryptoTransactions = pgTable(
     wallet: varchar('wallet', { length: 120 }).notNull(),
     transactionAt: timestamp('transaction_at', { withTimezone: true }).notNull().defaultNow(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    // Phase 7 — provenance for imported trades. 'manual' | 'binance' | 'okx' | 'bybit'.
+    source: varchar('source', { length: 20 }).notNull().default('manual'),
+    externalTradeId: varchar('external_trade_id', { length: 64 }),
   },
   (t) => ({
     userCoinIdx: index('crypto_tx_user_coin_idx').on(t.userId, t.coinId),
     userWalletIdx: index('crypto_tx_user_wallet_idx').on(t.userId, t.wallet),
+    // Idempotent exchange imports: one row per (user, source, external trade).
+    externalIdx: uniqueIndex('crypto_tx_external_idx')
+      .on(t.userId, t.source, t.externalTradeId)
+      .where(sql`${t.externalTradeId} IS NOT NULL`),
   }),
 );
 

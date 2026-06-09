@@ -17,3 +17,7 @@ export const exchangeEnum = pgEnum('exchange', ['HOSE', 'HNX', 'UPCOM']);
 export const cryptoActionEnum = pgEnum('crypto_action', ['buy', 'sell', 'swap']);
 
 export const dividendTypeEnum = pgEnum('dividend_type', ['cash', 'stock']);
+
+// Phase 7 — exchange sync.
+export const exchangeProviderEnum = pgEnum('exchange_provider', ['binance', 'okx', 'bybit']);
+export const connectionStatusEnum = pgEnum('connection_status', ['active', 'error', 'disabled']);

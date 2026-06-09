@@ -28,11 +28,11 @@ human-readable Vietnamese **alert** (severity + reasoning + suggested action). O
 - **Persistence:** none. In-memory TTL cache keyed `userId|coinSymbol|wallet` (~15 min). Recompute on `GET /crypto/alerts`.
 - **OHLC:** extend `CryptoDataProvider` with `fetchOhlc(coinId, range)` (seed deterministic, mirrors the stock seed). Real CoinGecko OHLC later behind the same interface.
 - **LLM:** `@openai/agents` with a custom OpenAI-compatible client (9router proxy) via env:
-  - `AI_BASE_URL` (e.g. `https://9router.nimo.io.vn/v1`), `AI_API_KEY`, `AI_MODEL` (e.g. `cx/gpt-5.5`).
+  - `LLM_BASE_URL` (e.g. `https://9router.nimo.io.vn/v1`), `LLM_API_KEY`, `LLM_MODEL` (e.g. `cx/gpt-5.5`).
   - `setDefaultOpenAIClient(new OpenAI({ baseURL, apiKey }))`, `setOpenAIAPI('chat_completions')` (proxy supports Chat Completions, not the Responses API), `setTracingDisabled(true)` (don't ship traces to OpenAI).
   - `Agent({ outputType: AlertOutputSchema })`, `run(agent, msg, { maxTurns: 1 })`.
 - **Stablecoins** (USDT, USDC, and any coin flagged stable): skip TA → return a single `info` "ổn định, không cảnh báo".
-- **Secrets:** `AI_API_KEY` only via env (`apps/api/.env`, gitignored). `.env.example` carries placeholders. Never commit the key.
+- **Secrets:** `LLM_API_KEY` only via env (`apps/api/.env`, gitignored). `.env.example` carries placeholders. Never commit the key.
 
 ## Indicators (`modules/crypto/ai/indicators.ts`, pure)
 
@@ -68,7 +68,7 @@ interface AiAlertProvider { generate(ctx: AlertContext): Promise<AlertResult>; }
 ```
 - `RuleAlertProvider` — deterministic VN templates from `ctx.signals`/`severity`. Always available.
 - `AgentAlertProvider` — `@openai/agents`; grounded prompt (the JSON `ctx`), VN, "không bịa số, chỉ diễn giải, gợi ý hành động ngắn"; `outputType` = zod `{ severity, title, message }`; `maxTurns:1`; ~8s timeout.
-- `aiAlert.service` picks `AgentAlertProvider` when `AI_API_KEY` + `AI_BASE_URL` set, else `RuleAlertProvider`; and wraps the agent call in try/catch → **falls back to rule** on any error.
+- `aiAlert.service` picks `AgentAlertProvider` when `LLM_API_KEY` + `LLM_BASE_URL` set, else `RuleAlertProvider`; and wraps the agent call in try/catch → **falls back to rule** on any error.
 
 ## Service (`modules/crypto/ai/aiAlert.service.ts`)
 
@@ -91,9 +91,9 @@ Added to `crypto.routes.ts`.
 
 ## Env + deps
 
-- `config/env.ts`: add `AI_BASE_URL?`, `AI_API_KEY?`, `AI_MODEL` (default `'gpt-4o-mini'`).
+- `config/env.ts`: add `LLM_BASE_URL?`, `LLM_API_KEY?`, `LLM_MODEL` (default `'gpt-4o-mini'`).
 - `apps/api/package.json`: add `@openai/agents`, `openai`.
-- `.env.example` (+ `.env.prod.example`): `AI_BASE_URL=`, `AI_API_KEY=`, `AI_MODEL=` placeholders.
+- `.env.example` (+ `.env.prod.example`): `LLM_BASE_URL=`, `LLM_API_KEY=`, `LLM_MODEL=` placeholders.
 
 ## Web
 
@@ -116,7 +116,7 @@ Added to `crypto.routes.ts`.
 - [ ] Works with **no** AI key (rule-based) and with the 9router proxy (agent), same response shape.
 - [ ] LLM never alters the computed numbers; failure/timeout falls back to rule-based.
 - [ ] Stablecoins skip TA (info only). Results cached ~15 min.
-- [ ] `AI_API_KEY` never committed; only via env.
+- [ ] `LLM_API_KEY` never committed; only via env.
 - [ ] `pnpm --filter @finfolio/api test` green; TA/signals/rule/cache tests pass without network.
 
 ## Out of scope

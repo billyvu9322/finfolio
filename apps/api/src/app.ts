@@ -1,5 +1,5 @@
 import cookie from "@fastify/cookie";
-import helmet from "@fastify/helmet";
+import cors from "@fastify/cors";
 import rateLimit from "@fastify/rate-limit";
 import Fastify, { type FastifyInstance } from "fastify";
 import { randomUUID } from "node:crypto";
@@ -11,13 +11,23 @@ import {
 } from "fastify-type-provider-zod";
 import { ZodError } from "zod";
 
-import { env } from "./config/env.js";
+import { env, type AppEnv } from "./config/env.js";
 import { authPlugin } from "./plugins/auth.js";
 import { schedulerPlugin } from "./plugins/scheduler.js";
 import { swaggerPlugin } from "./plugins/swagger.js";
 import { registerRoutes } from "./routes.js";
+import { db, type Database } from "./db/index.js";
+
+declare module "fastify" {
+  interface FastifyInstance {
+    db: Database;
+    env: AppEnv;
+  }
+}
 
 export async function buildApp(): Promise<FastifyInstance> {
+  console.log(`Starting API in ${env.NODE_ENV} mode on port ${env.API_PORT}`);
+
   const app = Fastify({
     logger: {
       level:
@@ -25,15 +35,19 @@ export async function buildApp(): Promise<FastifyInstance> {
       transport:
         env.NODE_ENV === "development" ? { target: "pino-pretty" } : undefined,
     },
+    bodyLimit: 32 * 1024 * 1024,
     genReqId: () => randomUUID(),
   }).withTypeProvider<ZodTypeProvider>();
 
-  // Zod handles request validation + response serialization.
+  app.decorate("env", env);
+  app.decorate("db", db);
+
   app.setValidatorCompiler(validatorCompiler);
   app.setSerializerCompiler(serializerCompiler);
 
-  // --- Security & infra plugins ---
-  await app.register(helmet);
+  // CORS before routes. credentials:true (axios withCredentials + httpOnly
+  // refresh cookie) requires an explicit origin allow-list, not "*".
+  await app.register(cors, { origin: env.CORS_ORIGIN, credentials: true });
   await app.register(cookie, { secret: env.JWT_SECRET });
   await app.register(rateLimit, { max: 100, timeWindow: "1 minute" });
   await app.register(authPlugin);

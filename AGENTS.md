@@ -9,7 +9,7 @@
 - Install from repo root: `pnpm install`.
 - Run both apps: `pnpm dev`.
 - Full build: `pnpm build`.
-- API dev: `pnpm --filter @finfolio/api dev` at `http://localhost:3000` (`/docs` for Swagger).
+- API dev: `pnpm --filter @finfolio/api dev` at `http://localhost:6001` (`/docs` for Swagger).
 - API verification: `pnpm --filter @finfolio/api typecheck` and `pnpm --filter @finfolio/api test`.
 - Web verification: `pnpm --filter @finfolio/web typecheck`; web build is `pnpm --filter @finfolio/web build`.
 - Root `pnpm lint` exists but package-level `lint` scripts are not currently defined; do not rely on lint until scripts are added.

@@ -3,6 +3,8 @@ import { useState, type FormEvent } from 'react';
 import { updateProfile } from '@/apis/auth.api';
 import { useAuthStore } from '@/stores/auth';
 
+import { ConnectionsSection } from './ConnectionsSection';
+
 export function SettingsPage() {
   const user = useAuthStore((s) => s.user);
   const setUser = useAuthStore((s) => s.setUser);
@@ -49,6 +51,8 @@ export function SettingsPage() {
           {loading ? 'Đang lưu...' : 'Lưu thay đổi'}
         </button>
       </form>
+
+      <ConnectionsSection />
     </section>
   );
 }

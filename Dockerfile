@@ -24,5 +24,5 @@ FROM build AS runtime
 ENV NODE_ENV=production
 # The API serves the built SPA from here (see app.ts).
 ENV WEB_STATIC_DIR=/app/apps/web/dist
-EXPOSE 3000
+EXPOSE 6001
 CMD ["pnpm", "--filter", "@finfolio/api", "start"]

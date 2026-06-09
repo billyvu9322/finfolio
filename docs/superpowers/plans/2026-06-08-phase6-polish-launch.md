@@ -97,9 +97,9 @@ services:
     env_file: .env.prod
     environment:
       NODE_ENV: production
-      API_PORT: 3000
+      API_PORT: 6001
     ports:
-      - "127.0.0.1:3000:3000"
+      - "127.0.0.1:6001:6001"
 
   web:
     build:
@@ -122,7 +122,6 @@ NODE_ENV=production
 DATABASE_URL=postgresql://USER:PASSWORD@HOST:5432/finfolio
 JWT_SECRET=replace-with-a-32+char-random-secret
 # Public hostnames served by the Cloudflare Tunnel
-CORS_ORIGIN=https://app.finfolio.example
 VITE_API_BASE_URL=https://app.finfolio.example/v1
 ENABLE_PRICE_SCHEDULER=true
 LOG_LEVEL=info

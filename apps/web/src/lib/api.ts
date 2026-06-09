@@ -1,8 +1,8 @@
-import axios, { AxiosError } from 'axios';
+import axios, { AxiosError } from "axios";
 
-import { useAuthStore } from '@/stores/auth';
+import { useAuthStore } from "@/stores/auth";
 
-const baseURL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000/v1';
+const baseURL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:6001/v1";
 
 /** Shared axios instance. `withCredentials` so the refresh cookie is sent. */
 export const api = axios.create({
@@ -26,13 +26,18 @@ api.interceptors.response.use(
   (res) => res,
   async (error: AxiosError) => {
     const original = error.config;
-    const isAuthCall = original?.url?.includes('/auth/');
+    const isAuthCall = original?.url?.includes("/auth/");
 
-    if (error.response?.status === 401 && original && !isAuthCall && !(original as never)['_retry']) {
+    if (
+      error.response?.status === 401 &&
+      original &&
+      !isAuthCall &&
+      !(original as never)["_retry"]
+    ) {
       (original as unknown as Record<string, unknown>)._retry = true;
       try {
         refreshing ??= api
-          .post<{ accessToken: string }>('/auth/refresh')
+          .post<{ accessToken: string }>("/auth/refresh")
           .then((r) => {
             const token = r.data.accessToken;
             useAuthStore.getState().setToken(token);

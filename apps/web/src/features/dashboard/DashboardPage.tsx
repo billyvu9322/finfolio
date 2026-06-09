@@ -1,8 +1,8 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Area, AreaChart, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
-import { createSnapshot, getGrowth, getRecentTransactions, getSummary, getTopHoldings, getTopMovers } from '@/apis/dashboard.api';
+import { getGrowth, getRecentTransactions, getSummary, getTopHoldings, getTopMovers } from '@/apis/dashboard.api';
 
 const formatVnd = (value: string) => `${new Intl.NumberFormat('vi-VN').format(Math.round(Number(value)))} d`;
 const COLORS: Record<string, string> = { gold: '#F59E0B', stock: '#3B82F6', crypto: '#A855F7', cash: '#64748B' };
@@ -10,7 +10,6 @@ const PERIODS = ['7d', '1m', '3m', '1y', 'all'] as const;
 
 export function DashboardPage() {
   const [period, setPeriod] = useState<(typeof PERIODS)[number]>('1m');
-  const queryClient = useQueryClient();
   const summary = useQuery({ queryKey: ['dash', 'summary'], queryFn: getSummary });
   const growth = useQuery({ queryKey: ['dash', 'growth', period], queryFn: () => getGrowth(period) });
   const holdings = useQuery({ queryKey: ['dash', 'top'], queryFn: () => getTopHoldings(5) });
@@ -19,11 +18,6 @@ export function DashboardPage() {
   const data = summary.data;
   const isEmpty = data && Number(data.aum) === 0;
 
-  const snapshot = async () => {
-    await createSnapshot();
-    await Promise.all([growth.refetch(), queryClient.invalidateQueries({ queryKey: ['dash'] })]);
-  };
-
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -31,7 +25,6 @@ export function DashboardPage() {
           <h1 className="text-2xl font-semibold">Tổng quan</h1>
           <p className="mt-1 text-sm text-neutral-400">Cockpit AUM, phân bổ, dòng tăng trưởng và biến động theo tài sản.</p>
         </div>
-        <button onClick={snapshot} className="rounded-md border border-neutral-700 px-4 py-2 text-sm text-neutral-300 hover:bg-neutral-800">Chụp snapshot</button>
       </div>
 
       {summary.isError ? <div className="mt-6 rounded border border-loss/30 bg-loss/10 p-3 text-sm text-loss">Không tải được dashboard.</div> : null}

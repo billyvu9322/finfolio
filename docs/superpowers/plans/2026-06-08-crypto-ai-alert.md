@@ -6,7 +6,7 @@
 >
 > **Prerequisite:** Phase 4 (Crypto) implemented — `cryptoService.portfolio`, `SeedCryptoDataProvider`, `CryptoDataProvider`.
 >
-> **Secret handling:** `AI_API_KEY` lives only in `apps/api/.env` (gitignored). Never write it into any tracked file; `.env.example` carries placeholders only.
+> **Secret handling:** `LLM_API_KEY` lives only in `apps/api/.env` (gitignored). Never write it into any tracked file; `.env.example` carries placeholders only.
 
 **Goal:** On-demand AI technical-analysis alerts for crypto holdings — a deterministic TA engine grounds an OpenAI Agents-SDK explainer (with a rule-based fallback), exposed at `GET /crypto/alerts`, cached ~15 min, no new DB table.
 
@@ -32,16 +32,16 @@ In `apps/api/package.json` `dependencies` add `"@openai/agents": "^0.1.0"`, `"op
 
 In `apps/api/src/config/env.ts` add to the schema:
 ```ts
-  AI_BASE_URL: z.string().url().optional(),
-  AI_API_KEY: z.string().optional(),
-  AI_MODEL: z.string().default('gpt-4o-mini'),
+  LLM_BASE_URL: z.string().url().optional(),
+  LLM_API_KEY: z.string().optional(),
+  LLM_MODEL: z.string().default('gpt-4o-mini'),
 ```
 Add to `apps/api/.env.example`, root `.env.example`, and `.env.prod.example` (placeholders only — never the real key):
 ```bash
 # AI alerts (OpenAI-compatible proxy). Leave blank to use the rule-based fallback.
-AI_BASE_URL=
-AI_API_KEY=
-AI_MODEL=gpt-4o-mini
+LLM_BASE_URL=
+LLM_API_KEY=
+LLM_MODEL=gpt-4o-mini
 ```
 
 - [ ] **Step 3: OHLC on the provider interface**
@@ -511,7 +511,7 @@ const INSTRUCTIONS = [
 let configured = false;
 function ensureClient(): void {
   if (configured) return;
-  setDefaultOpenAIClient(new OpenAI({ baseURL: env.AI_BASE_URL, apiKey: env.AI_API_KEY }));
+  setDefaultOpenAIClient(new OpenAI({ baseURL: env.LLM_BASE_URL, apiKey: env.LLM_API_KEY }));
   setOpenAIAPI('chat_completions'); // proxy supports Chat Completions, not the Responses API
   setTracingDisabled(true);
   configured = true;
@@ -529,7 +529,7 @@ export const agentAlertProvider: AiAlertProvider = {
     ensureClient();
     const agent = new Agent({
       name: 'CryptoAlertAnalyst',
-      model: env.AI_MODEL,
+      model: env.LLM_MODEL,
       instructions: INSTRUCTIONS,
       outputType: AlertOutput,
     });
@@ -569,7 +569,7 @@ const TTL_MS = 15 * 60 * 1000;
 const STABLE = new Set(['USDT', 'USDC', 'DAI', 'BUSD', 'TUSD']);
 const SEV_ORDER = { critical: 0, warning: 1, info: 2 } as const;
 
-const useAgent = Boolean(env.AI_BASE_URL && env.AI_API_KEY);
+const useAgent = Boolean(env.LLM_BASE_URL && env.LLM_API_KEY);
 
 async function generate(ctx: AlertContext) {
   if (useAgent) {
@@ -732,7 +732,7 @@ describe.skipIf(!hasDb)('crypto AI alerts (integration)', () => {
 
   beforeAll(async () => {
     process.env.JWT_SECRET ??= 'test-secret-test-secret-test-secret-123';
-    // No AI_API_KEY in tests → rule-based fallback path.
+    // No LLM_API_KEY in tests → rule-based fallback path.
     const { buildApp } = await import('../../../app.js');
     app = await buildApp();
     await app.ready();
@@ -842,7 +842,7 @@ In `apps/web/src/features/crypto/CryptoPortfolioPage.tsx`:
 - [ ] **API:** `pnpm --filter @finfolio/api typecheck && pnpm --filter @finfolio/api test`
   Expected: clean; `indicators`/`signals`/`ruleAlertProvider`/`aiAlert.cache` pass; AI integration skipped (no DB) or passing (with DB, rule-based path).
 - [ ] **Web:** `pnpm --filter @finfolio/web typecheck` — clean.
-- [ ] **Manual (with proxy):** set `AI_BASE_URL`/`AI_API_KEY`/`AI_MODEL` in `apps/api/.env`; login; buy a volatile coin; open `/crypto` → "AI Cảnh báo" shows grounded VN alerts. Unset key → same shapes via rule-based.
+- [ ] **Manual (with proxy):** set `LLM_BASE_URL`/`LLM_API_KEY`/`LLM_MODEL` in `apps/api/.env`; login; buy a volatile coin; open `/crypto` → "AI Cảnh báo" shows grounded VN alerts. Unset key → same shapes via rule-based.
 
 ---
 
@@ -852,6 +852,6 @@ In `apps/web/src/features/crypto/CryptoPortfolioPage.tsx`:
 - [ ] Works with no AI key (rule-based) and with the 9router proxy (agent), identical shape. (Tasks 5–6)
 - [ ] LLM never alters computed numbers; timeout/error → rule-based fallback. (Tasks 5–6)
 - [ ] Stablecoins → info only; results cached ~15 min. (Tasks 4, 6)
-- [ ] `AI_API_KEY` only via env; `.env.example` placeholders. (Task 1)
+- [ ] `LLM_API_KEY` only via env; `.env.example` placeholders. (Task 1)
 - [ ] `pnpm --filter @finfolio/api test` green; TA/signals/rule/cache pass without network. (Tasks 2–5)
 ```
