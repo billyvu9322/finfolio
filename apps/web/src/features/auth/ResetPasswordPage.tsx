@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { useState, type FormEvent } from 'react';
 
-import { resetPassword } from './auth.api';
+import { resetPassword } from '@/apis/auth.api';
 
 export function ResetPasswordPage() {
   const [token, setToken] = useState('');

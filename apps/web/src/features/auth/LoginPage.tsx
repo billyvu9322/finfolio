@@ -1,7 +1,7 @@
 import { Link, useNavigate } from '@tanstack/react-router';
 import { useState, type FormEvent } from 'react';
 
-import { login } from './auth.api';
+import { login } from '@/apis/auth.api';
 import { useAuthStore } from '@/stores/auth';
 
 export function LoginPage() {

@@ -1,5 +1,5 @@
 import { api } from '@/lib/api';
-import type { StockAction } from './fees';
+import type { StockAction } from '@/features/stock/fees';
 
 export type Exchange = 'HOSE' | 'HNX' | 'UPCOM';
 

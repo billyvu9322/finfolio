@@ -9,7 +9,7 @@ import {
   LogOut,
 } from 'lucide-react';
 
-import { logout } from '@/features/auth/auth.api';
+import { logout } from '@/apis/auth.api';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/auth';
 

@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 
-import { getStockPortfolio, listStockTx } from './stock.api';
+import { getStockPortfolio, listStockTx } from '@/apis/stock.api';
 
 const vnd = (value: string | null | undefined) => value == null ? '-' : new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(Number(value));
 

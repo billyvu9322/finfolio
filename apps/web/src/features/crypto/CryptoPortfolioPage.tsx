@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { useState } from 'react';
 
-import { getCryptoPortfolio } from './crypto.api';
+import { getCryptoPortfolio } from '@/apis/crypto.api';
 
 const formatVnd = (value: string | null | undefined) => (value == null ? '-' : `${new Intl.NumberFormat('vi-VN').format(Math.round(Number(value)))} d`);
 const formatUsd = (value: string | null | undefined) => (value == null ? '-' : `$${new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(Number(value))}`);

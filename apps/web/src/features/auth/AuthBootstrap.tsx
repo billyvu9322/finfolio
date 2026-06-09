@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react';
 
-import { me } from './auth.api';
+import { me } from '@/apis/auth.api';
 import { useAuthStore } from '@/stores/auth';
 
 export function AuthBootstrap({ children }: { children: ReactNode }) {

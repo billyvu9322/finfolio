@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { useState, type FormEvent } from 'react';
 
-import { createCryptoTx, searchCoins, swapCrypto, type Coin } from './crypto.api';
+import { createCryptoTx, searchCoins, swapCrypto, type Coin } from '@/apis/crypto.api';
 
 const WALLETS = ['Binance', 'OKX', 'Bybit', 'MetaMask', 'Trust Wallet', 'Ledger', 'Khác'];
 type Mode = 'buy' | 'sell' | 'swap';

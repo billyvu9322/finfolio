@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { useState, type FormEvent, type ReactNode } from 'react';
 
-import { createGoldTransaction, getGoldPrices, type GoldTransactionInput } from './gold.api';
+import { createGoldTransaction, getGoldPrices, type GoldTransactionInput } from '@/apis/gold.api';
 
 export function GoldAddPage() {
   const navigate = useNavigate();

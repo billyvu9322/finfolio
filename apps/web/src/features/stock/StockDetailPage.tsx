@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { createChart, type IChartApi } from 'lightweight-charts';
 import { useEffect, useRef } from 'react';
 
-import { getStockOhlc, getStockPortfolio, listStockTx } from './stock.api';
+import { getStockOhlc, getStockPortfolio, listStockTx } from '@/apis/stock.api';
 
 const vnd = (value: string | null | undefined) => value == null ? '-' : new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(Number(value));
 

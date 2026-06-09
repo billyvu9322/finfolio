@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 
-import { updateProfile } from '@/features/auth/auth.api';
+import { updateProfile } from '@/apis/auth.api';
 import { useAuthStore } from '@/stores/auth';
 
 export function SettingsPage() {

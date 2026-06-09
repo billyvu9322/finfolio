@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Area, AreaChart, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
-import { createSnapshot, getGrowth, getRecentTransactions, getSummary, getTopHoldings, getTopMovers } from './dashboard.api';
+import { createSnapshot, getGrowth, getRecentTransactions, getSummary, getTopHoldings, getTopMovers } from '@/apis/dashboard.api';
 
 const formatVnd = (value: string) => `${new Intl.NumberFormat('vi-VN').format(Math.round(Number(value)))} d`;
 const COLORS: Record<string, string> = { gold: '#F59E0B', stock: '#3B82F6', crypto: '#A855F7', cash: '#64748B' };

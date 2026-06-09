@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { useState, type FormEvent } from 'react';
 
-import { forgotPassword } from './auth.api';
+import { forgotPassword } from '@/apis/auth.api';
 
 export function ForgotPasswordPage() {
   const [email, setEmail] = useState('');

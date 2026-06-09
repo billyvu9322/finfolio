@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
-import { exportCsv, getPnlReport, getSnapshot, type SnapshotView } from './reports.api';
+import { exportCsv, getPnlReport, getSnapshot, type SnapshotView } from '@/apis/reports.api';
 
 const formatVnd = (value: string) => `${new Intl.NumberFormat('vi-VN').format(Math.round(Number(value)))} d`;
 

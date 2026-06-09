@@ -1,7 +1,7 @@
 import { Link, useNavigate } from '@tanstack/react-router';
 import { useState, type FormEvent } from 'react';
 
-import { register } from './auth.api';
+import { register } from '@/apis/auth.api';
 import { useAuthStore } from '@/stores/auth';
 
 function passwordIssues(password: string): string[] {

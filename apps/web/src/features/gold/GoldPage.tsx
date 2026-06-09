@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { Plus } from 'lucide-react';
 
-import { getGoldPortfolio, getGoldPrices, listGoldTransactions } from './gold.api';
+import { getGoldPortfolio, getGoldPrices, listGoldTransactions } from '@/apis/gold.api';
 
 const money = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 });
 

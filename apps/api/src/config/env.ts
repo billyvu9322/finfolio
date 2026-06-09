@@ -28,6 +28,9 @@ const envSchema = z.object({
     .string()
     .optional()
     .transform((value) => value === 'true' || value === '1'),
+  // When set (and the dir exists), the API also serves the built web SPA from here
+  // — used for the single-container Docker image. Unset in dev (web runs via Vite).
+  WEB_STATIC_DIR: z.string().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);

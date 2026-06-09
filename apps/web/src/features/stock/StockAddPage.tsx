@@ -3,7 +3,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { useMemo, useState, type FormEvent, type ReactNode } from 'react';
 
 import { computeStockFees, type StockAction } from './fees';
-import { createStockTx, searchSymbols, type Exchange } from './stock.api';
+import { createStockTx, searchSymbols, type Exchange } from '@/apis/stock.api';
 
 export function StockAddPage() {
   const navigate = useNavigate();
