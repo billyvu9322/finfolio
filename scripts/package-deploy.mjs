@@ -1,56 +1,89 @@
-#!/usr/bin/env node
-// Build a deployable release zip (cross-platform; matches `pnpm package:zip`).
-// Output: dist/finfolio-release.zip — copy to the prod VM, then build/migrate/up.
-import { createWriteStream, mkdirSync, readdirSync, statSync, existsSync } from 'node:fs';
-import { dirname, join, relative, sep } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import yazl from 'yazl';
+import { createWriteStream } from "node:fs";
+import { mkdir, readdir, rm, stat } from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { ZipFile } from "yazl";
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const outDir = join(root, 'dist');
-const outFile = join(outDir, 'finfolio-release.zip');
+export const DEPLOY_ZIP_NAME = "finfolio.zip";
 
-// Top-level entries to include in the release.
-const INCLUDE = [
-  'apps',
-  'scripts',
-  'package.json',
-  'pnpm-lock.yaml',
-  'pnpm-workspace.yaml',
-  'tsconfig.base.json',
-  'turbo.json',
-  'docker-compose.prod.yml',
-  'Dockerfile',
-  '.env.prod.example',
-];
+const EXCLUDED_SEGMENTS = new Set([
+  ".git",
+  ".turbo",
+  ".vs",
+  "coverage",
+  "dist",
+  "node_modules",
+  "postgres-data",
+]);
 
-// Directory/file names excluded anywhere in the tree.
-const EXCLUDE_DIRS = new Set(['node_modules', 'dist', '.git', '.turbo', '.docker', '.backups']);
-const EXCLUDE_FILE = (name) => name === '.env' || name.startsWith('.env.') && name !== '.env.prod.example' && name !== '.env.example';
+export function shouldIncludePath(relativePath) {
+  const normalized = relativePath.split(path.sep).join("/");
+  if (!normalized || normalized === DEPLOY_ZIP_NAME) return false;
+  if (normalized.endsWith(".log")) return false;
+  return !normalized
+    .split("/")
+    .some((segment) => EXCLUDED_SEGMENTS.has(segment));
+}
 
-const zip = new yazl.ZipFile();
+async function collectFiles(rootDir, currentDir = rootDir) {
+  const entries = await readdir(currentDir, { withFileTypes: true });
+  const files = [];
 
-function addPath(abs) {
-  const rel = relative(root, abs).split(sep).join('/');
-  const st = statSync(abs);
-  if (st.isDirectory()) {
-    const base = abs.split(sep).pop();
-    if (EXCLUDE_DIRS.has(base)) return;
-    for (const entry of readdirSync(abs)) addPath(join(abs, entry));
-  } else {
-    const base = abs.split(sep).pop();
-    if (EXCLUDE_FILE(base)) return;
-    zip.addFile(abs, rel);
+  for (const entry of entries) {
+    const absolutePath = path.join(currentDir, entry.name);
+    const relativePath = path.relative(rootDir, absolutePath);
+    if (!shouldIncludePath(relativePath)) continue;
+
+    if (entry.isDirectory()) {
+      files.push(...(await collectFiles(rootDir, absolutePath)));
+      continue;
+    }
+
+    if (entry.isFile()) {
+      files.push({
+        absolutePath,
+        relativePath: relativePath.split(path.sep).join("/"),
+      });
+    }
   }
+
+  return files;
 }
 
-mkdirSync(outDir, { recursive: true });
-for (const entry of INCLUDE) {
-  const abs = join(root, entry);
-  if (existsSync(abs)) addPath(abs);
+export async function createDeployZip(
+  rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), ".."),
+) {
+  const zipPath = path.join(rootDir, DEPLOY_ZIP_NAME);
+  await rm(zipPath, { force: true });
+  await mkdir(path.dirname(zipPath), { recursive: true });
+
+  const zipFile = new ZipFile();
+  const output = createWriteStream(zipPath);
+  const done = new Promise((resolve, reject) => {
+    output.on("close", resolve);
+    output.on("error", reject);
+    zipFile.outputStream.on("error", reject);
+  });
+  zipFile.outputStream.pipe(output);
+
+  const files = await collectFiles(rootDir);
+  for (const file of files) {
+    zipFile.addFile(file.absolutePath, file.relativePath);
+  }
+  zipFile.end();
+  await done;
+
+  const size = (await stat(zipPath)).size;
+  return { zipPath, files: files.length, size };
 }
 
-zip.outputStream.pipe(createWriteStream(outFile)).on('close', () => {
-  console.log(`Built ${relative(root, outFile)}`);
-});
-zip.end();
+if (
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(process.argv[1]).href
+) {
+  const result = await createDeployZip();
+  console.log(`Created ${result.zipPath}`);
+  console.log(`Files: ${result.files}`);
+  console.log(`Size: ${result.size} bytes`);
+  console.warn("WARNING: deploy zip includes .env files. Keep it private.");
+}
