@@ -4,6 +4,7 @@ import { and, count, desc, eq, gte, lte, type SQL } from 'drizzle-orm';
 import { db } from '../../db/index.js';
 import { cryptoTransactions, type CryptoTransaction } from '../../db/schema/index.js';
 import { searchCoins } from './crypto.coins.js';
+import { cryptoPriceService } from './crypto-price.service.js';
 import { computeFeeVnd, computeHolding, heldQty, type CryptoTx, type FeeCurrency, unrealizedPnl } from './cryptoMath.js';
 import type { CreateCryptoTxBody, ListCryptoTxQuery, SwapBody, UpdateCryptoTxBody } from './crypto.schema.js';
 import { SeedCryptoDataProvider } from './market/SeedCryptoDataProvider.js';
@@ -78,6 +79,15 @@ export const cryptoService = {
       transactionAt: body.transactionAt ?? new Date(),
     }).returning();
     return created!;
+  },
+
+  async get(userId: string, id: string): Promise<CryptoTransaction> {
+    const [row] = await db
+      .select()
+      .from(cryptoTransactions)
+      .where(and(eq(cryptoTransactions.id, id), eq(cryptoTransactions.userId, userId)));
+    if (!row) throw new CryptoError(404, 'Transaction not found');
+    return row;
   },
 
   async update(userId: string, id: string, patch: UpdateCryptoTxBody): Promise<CryptoTransaction> {
@@ -155,13 +165,18 @@ export const cryptoService = {
   },
 
   async portfolio(userId: string, fxOverride?: number) {
-    const [transactions, quotes, providerRate] = await Promise.all([
+    const [transactions, quotes, providerRate, realQuotes] = await Promise.all([
       db.select().from(cryptoTransactions).where(eq(cryptoTransactions.userId, userId)),
       provider.fetchPrices(),
       provider.fetchFxRate(),
+      cryptoPriceService.getQuotes(),
     ]);
     const fxRate = fxOverride ?? providerRate;
-    const quoteBySymbol = new Map(quotes.map((quote) => [quote.symbol, quote]));
+    // Seed prices as fallback; real Binance prices (crypto_prices) override per symbol.
+    const quoteBySymbol = new Map<string, { priceVnd: string; change24hPct: string | null }>(
+      quotes.map((quote) => [quote.symbol, { priceVnd: quote.priceVnd, change24hPct: quote.change24hPct }]),
+    );
+    for (const [symbol, quote] of realQuotes) quoteBySymbol.set(symbol, quote);
     const groups = new Map<string, CryptoTransaction[]>();
     for (const transaction of transactions) {
       const key = `${transaction.coinSymbol}|${transaction.wallet}`;

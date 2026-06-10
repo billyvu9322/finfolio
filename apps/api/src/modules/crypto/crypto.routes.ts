@@ -13,6 +13,7 @@ import {
   updateCryptoTxSchema,
 } from './crypto.schema.js';
 import { cryptoService } from './crypto.service.js';
+import { cryptoPriceService } from './crypto-price.service.js';
 import { aiAlertService } from './ai/aiAlert.service.js';
 import { connectionService } from './exchange/connection.service.js';
 
@@ -48,6 +49,12 @@ export const cryptoRoutes: FastifyPluginAsyncZod = async (fastify) => {
       },
     },
     async (request, reply) => reply.send(await cryptoService.list(request.user.sub, request.query)),
+  );
+
+  fastify.get(
+    '/transactions/:id',
+    { schema: { tags: ['crypto'], params: idParamSchema, response: { 200: cryptoTxSchema } } },
+    async (request, reply) => reply.send(await cryptoService.get(request.user.sub, request.params.id)),
   );
 
   fastify.post(
@@ -87,6 +94,37 @@ export const cryptoRoutes: FastifyPluginAsyncZod = async (fastify) => {
     '/prices',
     { schema: { tags: ['crypto'], querystring: fxQuerySchema, response: { 200: cryptoPricesSchema } } },
     async (request, reply) => reply.send(await cryptoService.prices(request.query.fx)),
+  );
+
+  const coinPriceSchema = z.object({
+    coinSymbol: z.string(),
+    priceUsdt: z.string(),
+    change24hPct: z.string().nullable(),
+    source: z.string(),
+    fetchedAt: z.date(),
+    stale: z.boolean(),
+  });
+
+  fastify.get(
+    '/coin-prices',
+    {
+      schema: {
+        tags: ['crypto'],
+        response: { 200: z.object({ prices: z.array(coinPriceSchema), updatedAt: z.date().nullable() }) },
+      },
+    },
+    async (_request, reply) => reply.send(await cryptoPriceService.listCryptoPrices()),
+  );
+
+  fastify.post(
+    '/coin-prices/refresh',
+    {
+      schema: {
+        tags: ['crypto'],
+        response: { 200: z.object({ updated: z.number(), symbols: z.array(z.string()) }) },
+      },
+    },
+    async (_request, reply) => reply.send(await cryptoPriceService.refreshCryptoPrices()),
   );
 
   fastify.get(
@@ -164,5 +202,25 @@ export const cryptoRoutes: FastifyPluginAsyncZod = async (fastify) => {
       },
     },
     async (request, reply) => reply.send(await connectionService.sync(request.user.sub, request.params.id)),
+  );
+
+  fastify.post(
+    '/connections/:id/health',
+    {
+      schema: {
+        tags: ['crypto'],
+        params: idParamSchema,
+        response: {
+          200: z.object({
+            ok: z.boolean(),
+            status: z.string(),
+            canTrade: z.boolean().optional(),
+            canWithdraw: z.boolean().optional(),
+            error: z.string().optional(),
+          }),
+        },
+      },
+    },
+    async (request, reply) => reply.send(await connectionService.health(request.user.sub, request.params.id)),
   );
 };

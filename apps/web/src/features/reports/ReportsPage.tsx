@@ -115,6 +115,13 @@ export function ReportsPage() {
               </tr>
             </thead>
             <tbody className="font-mono">
+              {(report.data?.byAsset.length ?? 0) === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-6 text-center text-neutral-500">
+                    Không có dữ liệu
+                  </td>
+                </tr>
+              ) : null}
               {report.data?.byAsset.map((asset) => (
                 <tr
                   key={asset.assetClass}

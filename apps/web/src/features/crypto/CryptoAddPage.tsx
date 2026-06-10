@@ -1,11 +1,13 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 
 import {
   createCryptoTx,
+  getCryptoTx,
   searchCoins,
   swapCrypto,
+  updateCryptoTx,
   type Coin,
 } from "@/apis/crypto.api";
 
@@ -23,25 +25,26 @@ type Mode = "buy" | "sell" | "swap";
 const inputClass =
   "w-full rounded-md border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm outline-none focus:border-brand";
 
-export function CryptoAddPage() {
+export function CryptoAddPage({ transactionId }: { transactionId?: string } = {}) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const isEditing = Boolean(transactionId);
   const [mode, setMode] = useState<Mode>("buy");
   const [wallet, setWallet] = useState(WALLETS[0]!);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [coin, setCoin] = useState("");
   const [coinOpen, setCoinOpen] = useState(false);
-  const [quantity, setQuantity] = useState("");
-  const [price, setPrice] = useState("");
+  const [quantity, setQuantity] = useState("0");
+  const [price, setPrice] = useState("0");
   const priceCurrency = "USDT" as const; // crypto priced in USDT (not VND)
   const [fee, setFee] = useState("0");
   const [feeCurrency, setFeeCurrency] = useState<"USDT" | "COIN">("USDT");
   const [transactionAt, setTransactionAt] = useState("");
   const [srcCoin, setSrcCoin] = useState("");
-  const [srcQty, setSrcQty] = useState("");
+  const [srcQty, setSrcQty] = useState("0");
   const [dstCoin, setDstCoin] = useState("");
-  const [dstQty, setDstQty] = useState("");
+  const [dstQty, setDstQty] = useState("0");
   const [valueVnd, setValueVnd] = useState("");
 
   const coinQuery = useQuery({
@@ -49,6 +52,25 @@ export function CryptoAddPage() {
     queryFn: () => searchCoins(coin),
     enabled: mode !== "swap" && coin.length > 0,
   });
+
+  const editTx = useQuery({
+    queryKey: ["crypto", "tx", transactionId],
+    queryFn: () => getCryptoTx(transactionId!),
+    enabled: isEditing,
+  });
+
+  useEffect(() => {
+    const tx = editTx.data;
+    if (!tx) return;
+    setMode(tx.action === "sell" ? "sell" : "buy");
+    setCoin(tx.coinSymbol);
+    setQuantity(tx.quantity);
+    setPrice(tx.priceUsd ?? "0"); // form is USDT-based
+    setFee(tx.fee);
+    setFeeCurrency(tx.feeCurrency === "COIN" ? "COIN" : "USDT");
+    setWallet(tx.wallet);
+    setTransactionAt(new Date(tx.transactionAt).toISOString().slice(0, 16));
+  }, [editTx.data]);
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
@@ -75,10 +97,10 @@ export function CryptoAddPage() {
         });
       } else {
         const selected = await resolveCoin(coin);
-        await createCryptoTx({
+        const body = {
           coinId: selected.coinId,
           coinSymbol: selected.symbol,
-          action: mode,
+          action: mode as "buy" | "sell",
           quantity: Number(quantity),
           price: Number(price),
           priceCurrency,
@@ -88,7 +110,9 @@ export function CryptoAddPage() {
           ...(transactionAt
             ? { transactionAt: new Date(transactionAt).toISOString() }
             : {}),
-        });
+        };
+        if (isEditing) await updateCryptoTx(transactionId!, body);
+        else await createCryptoTx(body);
       }
       await queryClient.invalidateQueries({ queryKey: ["crypto"] });
       void navigate({ to: "/crypto" });
@@ -105,9 +129,13 @@ export function CryptoAddPage() {
 
   return (
     <div className="max-w-2xl">
-      <h1 className="text-2xl font-semibold">Nhập giao dịch crypto</h1>
+      <h1 className="text-2xl font-semibold">
+        {isEditing ? "Sửa giao dịch crypto" : "Nhập giao dịch crypto"}
+      </h1>
       <p className="mt-1 text-sm text-neutral-400">
-        Mua/bán theo giá USDT, hoặc swap thành một lệnh bán + một lệnh mua.
+        {isEditing
+          ? "Sửa lệnh mua/bán theo giá USDT."
+          : "Mua/bán theo giá USDT, hoặc swap thành một lệnh bán + một lệnh mua."}
       </p>
 
       <form
@@ -121,7 +149,7 @@ export function CryptoAddPage() {
         ) : null}
 
         <div className="mb-5 flex gap-2">
-          {(["buy", "sell", "swap"] as const).map((item) => (
+          {(isEditing ? (["buy", "sell"] as const) : (["buy", "sell", "swap"] as const)).map((item) => (
             <button
               key={item}
               type="button"
@@ -166,6 +194,7 @@ export function CryptoAddPage() {
                 type="number"
                 step="0.00000001"
                 min="0"
+                defaultValue="0"
                 value={quantity}
                 onChange={(event) => setQuantity(event.target.value)}
                 required
@@ -177,6 +206,7 @@ export function CryptoAddPage() {
                 <input
                   type="number"
                   min="0"
+                  defaultValue="0"
                   value={price}
                   onChange={(event) => setPrice(event.target.value)}
                   required

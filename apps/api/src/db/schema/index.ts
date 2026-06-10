@@ -10,3 +10,4 @@ export * from './portfolio-snapshots.js';
 export * from './dividend-events.js';
 export * from './exchange-connections.js';
 export * from './gold-prices.js';
+export * from './crypto-prices.js';

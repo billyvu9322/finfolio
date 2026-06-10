@@ -36,3 +36,16 @@ export async function syncConnection(id: string): Promise<{ imported: number; sk
   );
   return data;
 }
+
+export interface ConnectionHealth {
+  ok: boolean;
+  status: string;
+  canTrade?: boolean;
+  canWithdraw?: boolean;
+  error?: string;
+}
+
+export async function healthConnection(id: string): Promise<ConnectionHealth> {
+  const { data } = await api.post<ConnectionHealth>(`/crypto/connections/${id}/health`);
+  return data;
+}

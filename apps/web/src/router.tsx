@@ -84,6 +84,19 @@ const stockDetailRoute = createRoute({
 });
 const cryptoRoute = child('/crypto', lazyPage(() => import('@/features/crypto/CryptoPortfolioPage'), 'CryptoPortfolioPage'));
 const cryptoAddRoute = child('/crypto/add', lazyPage(() => import('@/features/crypto/CryptoAddPage'), 'CryptoAddPage'));
+const CryptoEditLazy = lazy(() => import('@/features/crypto/CryptoAddPage').then((module) => ({ default: module.CryptoAddPage })));
+const cryptoEditRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/crypto/$transactionId',
+  component: () => {
+    const params = cryptoEditRoute.useParams();
+    return (
+      <Suspense fallback={<RouteFallback />}>
+        <CryptoEditLazy transactionId={params.transactionId} />
+      </Suspense>
+    );
+  },
+});
 const reportsRoute = child('/reports', lazyPage(() => import('@/features/reports/ReportsPage'), 'ReportsPage'));
 const settingsRoute = child('/settings', lazyPage(() => import('@/features/settings/SettingsPage'), 'SettingsPage'));
 
@@ -103,6 +116,7 @@ const routeTree = rootRoute.addChildren([
     stockDetailRoute,
     cryptoRoute,
     cryptoAddRoute,
+    cryptoEditRoute,
     reportsRoute,
     settingsRoute,
   ]),

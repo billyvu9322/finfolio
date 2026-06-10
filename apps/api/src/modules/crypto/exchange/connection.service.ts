@@ -62,6 +62,33 @@ export const connectionService = {
     if (!row) throw new CryptoError(404, 'Connection not found');
   },
 
+  /** Re-verify the stored key still works (live Binance call). Updates status. */
+  async health(userId: string, id: string) {
+    const [conn] = await db
+      .select()
+      .from(exchangeConnections)
+      .where(and(eq(exchangeConnections.id, id), eq(exchangeConnections.userId, userId)));
+    if (!conn) throw new CryptoError(404, 'Connection not found');
+
+    const adapter = adapterFor(conn.exchange);
+    const creds = { apiKey: decryptSecret(conn.apiKeyEnc), apiSecret: decryptSecret(conn.apiSecretEnc) };
+    try {
+      const perms = await adapter.verifyKey(creds);
+      await db
+        .update(exchangeConnections)
+        .set({ status: 'active', lastError: null })
+        .where(eq(exchangeConnections.id, id));
+      return { ok: true, status: 'active' as const, canTrade: perms.canTrade, canWithdraw: perms.canWithdraw };
+    } catch (err) {
+      const message = (err as Error).message;
+      await db
+        .update(exchangeConnections)
+        .set({ status: 'error', lastError: message })
+        .where(eq(exchangeConnections.id, id));
+      return { ok: false, status: 'error' as const, error: message };
+    }
+  },
+
   async sync(userId: string, id: string) {
     const [conn] = await db
       .select()

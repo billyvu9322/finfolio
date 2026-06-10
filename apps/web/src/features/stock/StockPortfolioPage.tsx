@@ -61,6 +61,13 @@ export function StockPortfolioPage() {
             </tr>
           </thead>
           <tbody className="font-mono">
+            {(portfolio.data?.holdings.length ?? 0) === 0 ? (
+              <tr>
+                <td colSpan={7} className="p-6 text-center text-neutral-500">
+                  Không có dữ liệu
+                </td>
+              </tr>
+            ) : null}
             {portfolio.data?.holdings.map((holding) => (
               <tr
                 key={holding.symbol}
