@@ -41,6 +41,15 @@ export function GoldAddPage({ transactionId }: { transactionId?: string }) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // Gợi ý loại vàng từ "Giá thị trường mua lại" (bỏ XAU/USD — đơn vị USD/oz, không mua VN).
+  const goldTypeOptions = [
+    ...new Set(
+      (prices.data?.prices ?? [])
+        .filter((item) => item.currency === "VND")
+        .map((item) => item.symbol),
+    ),
+  ];
+
   useEffect(() => {
     if (!transaction) return;
     setForm({
@@ -117,11 +126,10 @@ export function GoldAddPage({ transactionId }: { transactionId?: string }) {
           </div>
         )}
         <Field label="Loại vàng">
-          <input
-            required
+          <GoldTypeAutocomplete
             value={form.goldType}
-            onChange={(e) => setField("goldType", e.target.value)}
-            className="input"
+            onChange={(v) => setField("goldType", v)}
+            options={goldTypeOptions}
           />
         </Field>
         <Field label="Hành động">
@@ -236,6 +244,56 @@ export function GoldAddPage({ transactionId }: { transactionId?: string }) {
         </div>
       </form>
     </section>
+  );
+}
+
+function GoldTypeAutocomplete({
+  value,
+  onChange,
+  options,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  options: string[];
+}) {
+  const [open, setOpen] = useState(false);
+  const q = value.trim().toLowerCase();
+  const filtered = options.filter((o) => o.toLowerCase().includes(q)).slice(0, 8);
+
+  return (
+    <div className="relative">
+      <input
+        required
+        autoComplete="off"
+        value={value}
+        placeholder="Chọn hoặc nhập loại vàng"
+        onChange={(e) => {
+          onChange(e.target.value);
+          setOpen(true);
+        }}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setTimeout(() => setOpen(false), 120)}
+        className="input"
+      />
+      {open && filtered.length > 0 && (
+        <div className="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded-md border border-neutral-700 bg-neutral-900 shadow-xl">
+          {filtered.map((o) => (
+            <button
+              type="button"
+              key={o}
+              onMouseDown={(e) => {
+                e.preventDefault(); // keep focus so click registers before blur
+                onChange(o);
+                setOpen(false);
+              }}
+              className="block w-full px-3 py-2 text-left text-sm text-neutral-200 hover:bg-neutral-800"
+            >
+              {o}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 

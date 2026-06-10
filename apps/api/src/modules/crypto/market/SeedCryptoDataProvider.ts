@@ -1,5 +1,5 @@
 import { CRYPTO_COINS } from '../crypto.coins.js';
-import type { CryptoDataProvider, CryptoQuote } from './CryptoDataProvider.js';
+import type { CryptoCandle, CryptoDataProvider, CryptoQuote } from './CryptoDataProvider.js';
 
 const FX = 25000;
 
@@ -33,5 +33,25 @@ export class SeedCryptoDataProvider implements CryptoDataProvider {
 
   async fetchFxRate(): Promise<number> {
     return FX;
+  }
+
+  async fetchOhlc(coinId: string, range: '1m' | '3m' | '6m'): Promise<CryptoCandle[]> {
+    const days = { '1m': 30, '3m': 90, '6m': 180 }[range];
+    const coin = CRYPTO_COINS.find((c) => c.coinId === coinId);
+    const base = (coin ? usdPrice(coin.symbol) : 100) * FX; // VND base
+    let seed = [...coinId].reduce((s, c) => s + c.charCodeAt(0), 11);
+    const rand = () => ((seed = (seed * 9301 + 49297) % 233280) / 233280);
+    const out: CryptoCandle[] = [];
+    let prev = base;
+    const start = new Date();
+    start.setDate(start.getDate() - days);
+    for (let i = 0; i < days; i++) {
+      const d = new Date(start);
+      d.setDate(start.getDate() + i);
+      const close = Math.max(1, Math.round(prev + (rand() - 0.5) * 0.06 * base)); // ±3%
+      out.push({ time: d.toISOString().slice(0, 10), close });
+      prev = close;
+    }
+    return out;
   }
 }

@@ -19,10 +19,19 @@ export const schedulerPlugin = fp(async (fastify) => {
         .then((count) => fastify.log.info(`Snapshotted ${count} users`))
         .catch((error) => fastify.log.error(error, 'Snapshot job failed'));
     });
+    const { goldPriceService } = await import('../modules/gold/gold-price.service.js');
+    const goldTask: ScheduledTask = cron.schedule('0 12 * * *', () => {
+      goldPriceService
+        .refreshGoldPrices()
+        .then((r: { total: number }) => fastify.log.info(`Gold prices refreshed: ${r.total}`))
+        .catch((error: unknown) => fastify.log.error(error, 'Gold price refresh failed'));
+    });
     fastify.addHook('onClose', async () => stockTask.stop());
     fastify.addHook('onClose', async () => snapshotTask.stop());
+    fastify.addHook('onClose', async () => goldTask.stop());
     fastify.log.info('Stock price scheduler enabled (*/5 * * * *)');
     fastify.log.info('Portfolio snapshot scheduler enabled (0 0 * * *)');
+    fastify.log.info('Gold price scheduler enabled (0 12 * * *)');
   } else {
     fastify.log.info('Price scheduler disabled');
   }

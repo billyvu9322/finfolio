@@ -61,6 +61,7 @@ export const goldPriceSchema = z.object({
   priceBuy: z.string().nullable(),
   priceSell: z.string().nullable(),
   currency: z.string(),
+  unit: z.string(),
   source: z.string(),
   fetchedAt: z.date(),
   stale: z.boolean(),

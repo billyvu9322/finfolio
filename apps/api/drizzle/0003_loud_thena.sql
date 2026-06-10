@@ -1,0 +1,5 @@
+-- Baseline marker for drizzle-kit. The schema (all tables/enums) was already
+-- created by the hand-authored 0000_init / 0001_exchange_sync / 0002_gold_prices
+-- migrations, so this migration is intentionally a no-op. Its snapshot
+-- (meta/0003_snapshot.json) is the baseline drizzle-kit diffs future
+-- `db:generate` runs against. Do NOT add the full CREATE statements back here.

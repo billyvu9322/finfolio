@@ -63,6 +63,13 @@ const envSchema = z.object({
     .string()
     .optional()
     .transform((value) => value === "true" || value === "1"),
+
+  // Gold price crawl — browser UA so bot-blocking sources (e.g. Quang Hạnh) accept the request.
+  GOLD_CRAWL_USER_AGENT: z
+    .string()
+    .default(
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+    ),
 });
 
 const parsed = envSchema.safeParse(process.env);

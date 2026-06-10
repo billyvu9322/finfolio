@@ -13,6 +13,7 @@ import {
   updateCryptoTxSchema,
 } from './crypto.schema.js';
 import { cryptoService } from './crypto.service.js';
+import { aiAlertService } from './ai/aiAlert.service.js';
 import { connectionService } from './exchange/connection.service.js';
 
 const idParamSchema = z.object({ id: z.string().uuid() });
@@ -86,6 +87,38 @@ export const cryptoRoutes: FastifyPluginAsyncZod = async (fastify) => {
     '/prices',
     { schema: { tags: ['crypto'], querystring: fxQuerySchema, response: { 200: cryptoPricesSchema } } },
     async (request, reply) => reply.send(await cryptoService.prices(request.query.fx)),
+  );
+
+  fastify.get(
+    '/alerts',
+    {
+      schema: {
+        tags: ['crypto'],
+        response: {
+          200: z.object({
+            alerts: z.array(
+              z.object({
+                coinSymbol: z.string(),
+                wallet: z.string(),
+                severity: z.enum(['info', 'warning', 'critical']),
+                title: z.string(),
+                message: z.string(),
+                signals: z.array(
+                  z.object({
+                    type: z.string(),
+                    dir: z.string(),
+                    strength: z.number(),
+                    detail: z.string(),
+                  }),
+                ),
+                computedAt: z.string(),
+              }),
+            ),
+          }),
+        },
+      },
+    },
+    async (request, reply) => reply.send(await aiAlertService.getAlerts(request.user.sub)),
   );
 
   // --- Phase 7: exchange connections (read-only key link + on-demand sync) ---

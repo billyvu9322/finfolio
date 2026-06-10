@@ -2,6 +2,7 @@ import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 
 import { goldService } from './gold.service.js';
+import { goldPriceService } from './gold-price.service.js';
 import {
   goldPortfolioSchema,
   goldPriceSchema,
@@ -123,5 +124,29 @@ export const goldRoutes: FastifyPluginAsyncZod = async (fastify) => {
       },
     },
     async (_request, reply) => reply.send(await goldService.getPrices()),
+  );
+
+  fastify.post(
+    '/prices/refresh',
+    {
+      schema: {
+        tags: ['gold'],
+        security: [{ bearerAuth: [] }],
+        response: {
+          200: z.object({
+            total: z.number(),
+            sources: z.array(
+              z.object({
+                key: z.string(),
+                label: z.string(),
+                count: z.number().optional(),
+                error: z.string().optional(),
+              }),
+            ),
+          }),
+        },
+      },
+    },
+    async (_request, reply) => reply.send(await goldPriceService.refreshGoldPrices()),
   );
 };

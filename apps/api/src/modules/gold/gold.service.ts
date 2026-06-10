@@ -1,12 +1,13 @@
+import Decimal from 'decimal.js';
 import { and, asc, count, desc, eq, gte, lte, type SQL } from 'drizzle-orm';
 
 import { db } from '../../db/index.js';
-import { goldTransactions, priceCache, type GoldTransaction } from '../../db/schema/index.js';
+import { goldTransactions, type GoldTransaction } from '../../db/schema/index.js';
 import { AuthError } from '../auth/auth.service.js';
 import { calculateGoldPortfolio } from './gold.calc.js';
+import { goldPriceService } from './gold-price.service.js';
+import { resolveCurrentPriceLuong } from './gold-price.resolve.js';
 import type { GoldTransactionBody, GoldTransactionQuery } from './gold.schema.js';
-
-const PRICE_STALE_MS = 15 * 60 * 1000;
 
 function toPublic(tx: GoldTransaction) {
   return {
@@ -108,32 +109,22 @@ export const goldService = {
   },
 
   async getPortfolio(userId: string) {
-    const [transactions, prices] = await Promise.all([
+    const [transactions, priceRows] = await Promise.all([
       db.query.goldTransactions.findMany({ where: eq(goldTransactions.userId, userId) }),
-      db.query.priceCache.findMany({ where: eq(priceCache.assetType, 'gold') }),
+      goldPriceService.listForValuation(),
     ]);
-    const currentPrices = Object.fromEntries(
-      prices.map((row) => [row.symbol, row.priceBuy ?? row.priceSell ?? '0']),
-    );
+    // Crawled prices are VND/lượng; gold.calc expects VND/chỉ → ÷10. Best-effort
+    // map by gold type; no match → omit so calc falls back to DCA.
+    const currentPrices: Record<string, string> = {};
+    for (const tx of transactions) {
+      if (currentPrices[tx.goldType]) continue;
+      const luong = resolveCurrentPriceLuong(tx.goldType, priceRows);
+      if (luong) currentPrices[tx.goldType] = new Decimal(luong).div(10).toFixed(2);
+    }
     return calculateGoldPortfolio(transactions, currentPrices);
   },
 
-  async getPrices() {
-    const rows = await db.query.priceCache.findMany({ where: eq(priceCache.assetType, 'gold') });
-    return {
-      prices: rows.map((row) => ({
-        symbol: row.symbol,
-        priceBuy: row.priceBuy,
-        priceSell: row.priceSell,
-        currency: row.currency,
-        source: row.source,
-        fetchedAt: row.fetchedAt,
-        stale: Date.now() - row.fetchedAt.getTime() > PRICE_STALE_MS,
-      })),
-      updatedAt: rows.reduce<Date | null>((latest, row) => {
-        if (!latest || row.fetchedAt > latest) return row.fetchedAt;
-        return latest;
-      }, null),
-    };
+  getPrices() {
+    return goldPriceService.getPrices();
   },
 };

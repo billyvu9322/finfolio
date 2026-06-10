@@ -29,6 +29,7 @@ export interface GoldPrice {
   priceBuy: string | null;
   priceSell: string | null;
   currency: string;
+  unit: string;
   source: string;
   fetchedAt: string;
   stale: boolean;
@@ -63,6 +64,16 @@ export async function getGoldPortfolio() {
 
 export async function getGoldPrices() {
   const { data } = await api.get<{ prices: GoldPrice[]; updatedAt: string | null }>('/gold/prices');
+  return data;
+}
+
+export interface GoldRefreshResult {
+  total: number;
+  sources: { key: string; label: string; count?: number; error?: string }[];
+}
+
+export async function refreshGoldPrices() {
+  const { data } = await api.post<GoldRefreshResult>('/gold/prices/refresh');
   return data;
 }
 

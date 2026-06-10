@@ -90,3 +90,16 @@ export const getCryptoPrices = async (fx?: number) => {
   const response = await api.get<{ quotes: CryptoQuote[]; fxRate: number }>('/crypto/prices', { params: { fx } });
   return response.data;
 };
+
+export interface CryptoAlert {
+  coinSymbol: string;
+  wallet: string;
+  severity: 'info' | 'warning' | 'critical';
+  title: string;
+  message: string;
+  signals: { type: string; dir: string; strength: number; detail: string }[];
+  computedAt: string;
+}
+
+export const getCryptoAlerts = async () =>
+  (await api.get<{ alerts: CryptoAlert[] }>('/crypto/alerts')).data.alerts;

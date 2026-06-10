@@ -9,3 +9,4 @@ export * from './price-cache.js';
 export * from './portfolio-snapshots.js';
 export * from './dividend-events.js';
 export * from './exchange-connections.js';
+export * from './gold-prices.js';
