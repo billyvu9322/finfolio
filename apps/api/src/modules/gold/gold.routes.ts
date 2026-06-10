@@ -48,6 +48,22 @@ export const goldRoutes: FastifyPluginAsyncZod = async (fastify) => {
     },
   );
 
+  fastify.get(
+    '/transactions/:id',
+    {
+      schema: {
+        tags: ['gold'],
+        security: [{ bearerAuth: [] }],
+        params: goldTransactionParamsSchema,
+        response: { 200: z.object({ transaction: goldTransactionSchema }) },
+      },
+    },
+    async (request, reply) => {
+      const transaction = await goldService.getTransaction(request.user.sub, request.params.id);
+      return reply.send({ transaction });
+    },
+  );
+
   fastify.put(
     '/transactions/:id',
     {

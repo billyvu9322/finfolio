@@ -1138,12 +1138,7 @@ export function CryptoPortfolioPage() {
         </div>
       </div>
 
-      {empty ? (
-        <div className="mt-8 rounded-lg border border-dashed border-neutral-700 p-10 text-center text-neutral-500">
-          Chưa có giao dịch crypto. Nhập giao dịch đầu tiên.
-        </div>
-      ) : (
-        <>
+      {empty && <>
           <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
             <Kpi label="Tổng giá trị" value={`${vnd(t?.valueVnd ?? null)} · ${usd(t?.valueUsd ?? null)}`} />
             <Kpi label="Tổng vốn" value={vnd(t?.invested ?? null)} />
@@ -1195,8 +1190,7 @@ export function CryptoPortfolioPage() {
               </tbody>
             </table>
           </div>
-        </>
-      )}
+        </>}
     </div>
   );
 }

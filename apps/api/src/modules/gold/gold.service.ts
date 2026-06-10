@@ -60,6 +60,14 @@ export const goldService = {
     };
   },
 
+  async getTransaction(userId: string, id: string) {
+    const transaction = await db.query.goldTransactions.findFirst({
+      where: and(eq(goldTransactions.id, id), eq(goldTransactions.userId, userId)),
+    });
+    if (!transaction) throw new AuthError(404, 'Gold transaction not found');
+    return toPublic(transaction);
+  },
+
   async createTransaction(userId: string, input: GoldTransactionBody) {
     const [created] = await db
       .insert(goldTransactions)

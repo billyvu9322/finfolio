@@ -54,6 +54,19 @@ const child = <TPath extends string>(path: TPath, component: RoutePage) => creat
 const dashboardRoute = child('/dashboard', lazyPage(() => import('@/features/dashboard/DashboardPage'), 'DashboardPage'));
 const goldRoute = child('/gold', lazyPage(() => import('@/features/gold/GoldPage'), 'GoldPage'));
 const goldAddRoute = child('/gold/add', lazyPage(() => import('@/features/gold/GoldAddPage'), 'GoldAddPage'));
+const GoldEditLazy = lazy(() => import('@/features/gold/GoldAddPage').then((module) => ({ default: module.GoldAddPage })));
+const goldEditRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/gold/$transactionId',
+  component: () => {
+    const params = goldEditRoute.useParams();
+    return (
+      <Suspense fallback={<RouteFallback />}>
+        <GoldEditLazy transactionId={params.transactionId} />
+      </Suspense>
+    );
+  },
+});
 const stocksRoute = child('/stocks', lazyPage(() => import('@/features/stock/StockPortfolioPage'), 'StockPortfolioPage'));
 const stocksAddRoute = child('/stocks/add', lazyPage(() => import('@/features/stock/StockAddPage'), 'StockAddPage'));
 const StockDetailLazy = lazy(() => import('@/features/stock/StockDetailPage').then((module) => ({ default: module.StockDetailPage })));
@@ -84,6 +97,7 @@ const routeTree = rootRoute.addChildren([
     dashboardRoute,
     goldRoute,
     goldAddRoute,
+    goldEditRoute,
     stocksRoute,
     stocksAddRoute,
     stockDetailRoute,

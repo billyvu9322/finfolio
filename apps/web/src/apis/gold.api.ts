@@ -51,6 +51,11 @@ export async function listGoldTransactions() {
   return data;
 }
 
+export async function getGoldTransaction(id: string) {
+  const { data } = await api.get<{ transaction: GoldTransaction }>(`/gold/transactions/${id}`);
+  return data.transaction;
+}
+
 export async function getGoldPortfolio() {
   const { data } = await api.get<{ holdings: GoldHolding[]; totalValue: string; totalUnrealizedPnl: string }>('/gold/portfolio');
   return data;
@@ -63,6 +68,11 @@ export async function getGoldPrices() {
 
 export async function createGoldTransaction(input: GoldTransactionInput) {
   const { data } = await api.post<{ transaction: GoldTransaction }>('/gold/transactions', input);
+  return data.transaction;
+}
+
+export async function updateGoldTransaction(id: string, input: GoldTransactionInput) {
+  const { data } = await api.put<{ transaction: GoldTransaction }>(`/gold/transactions/${id}`, input);
   return data.transaction;
 }
 
