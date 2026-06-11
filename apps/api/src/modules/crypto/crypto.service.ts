@@ -7,6 +7,7 @@ import { searchCoins } from './crypto.coins.js';
 import { cryptoPriceService } from './crypto-price.service.js';
 import { computeFeeVnd, computeHolding, heldQty, type CryptoTx, type FeeCurrency, unrealizedPnl } from './cryptoMath.js';
 import type { CreateCryptoTxBody, ListCryptoTxQuery, SwapBody, UpdateCryptoTxBody } from './crypto.schema.js';
+import { fetchUsdVndRate } from './market/FxRateProvider.js';
 import { SeedCryptoDataProvider } from './market/SeedCryptoDataProvider.js';
 
 const provider = new SeedCryptoDataProvider();
@@ -52,7 +53,7 @@ export const cryptoService = {
   },
 
   async create(userId: string, body: CreateCryptoTxBody): Promise<CryptoTransaction> {
-    const rate = body.usdVndRate ?? (await provider.fetchFxRate());
+    const rate = body.usdVndRate ?? (await fetchUsdVndRate());
     const priceVnd = body.priceCurrency === 'USDT' ? new Decimal(body.price).mul(rate) : new Decimal(body.price);
     const priceUsd = body.priceCurrency === 'USDT' ? new Decimal(body.price) : priceVnd.div(rate);
     const symbol = body.coinSymbol.toUpperCase();
@@ -98,7 +99,7 @@ export const cryptoService = {
     if (patch.quantity !== undefined) set.quantity = String(patch.quantity);
     if (patch.price !== undefined) set.priceVnd = String(patch.price);
     if (patch.priceCurrency !== undefined && patch.price !== undefined) {
-      const rate = patch.usdVndRate ?? (await provider.fetchFxRate());
+      const rate = patch.usdVndRate ?? (await fetchUsdVndRate());
       const priceVnd = patch.priceCurrency === 'USDT' ? new Decimal(patch.price).mul(rate) : new Decimal(patch.price);
       set.priceVnd = priceVnd.toFixed(2);
       set.priceUsd = (patch.priceCurrency === 'USDT' ? new Decimal(patch.price) : priceVnd.div(rate)).toFixed(8);
@@ -121,7 +122,7 @@ export const cryptoService = {
   },
 
   async swap(userId: string, body: SwapBody): Promise<{ source: CryptoTransaction; dest: CryptoTransaction }> {
-    const rate = await provider.fetchFxRate();
+    const rate = await fetchUsdVndRate();
     const sourceSymbol = body.sourceSymbol.toUpperCase();
     const sellPriceVnd = new Decimal(body.valueVnd).div(body.sourceQty);
     const buyPriceVnd = new Decimal(body.valueVnd).div(body.destQty);
@@ -168,13 +169,13 @@ export const cryptoService = {
     const [transactions, quotes, providerRate, realQuotes] = await Promise.all([
       db.select().from(cryptoTransactions).where(eq(cryptoTransactions.userId, userId)),
       provider.fetchPrices(),
-      provider.fetchFxRate(),
+      fetchUsdVndRate(),
       cryptoPriceService.getQuotes(),
     ]);
     const fxRate = fxOverride ?? providerRate;
     // Seed prices as fallback; real Binance prices (crypto_prices) override per symbol.
-    const quoteBySymbol = new Map<string, { priceVnd: string; change24hPct: string | null }>(
-      quotes.map((quote) => [quote.symbol, { priceVnd: quote.priceVnd, change24hPct: quote.change24hPct }]),
+    const quoteBySymbol = new Map<string, { priceUsd: string; priceVnd: string; change24hPct: string | null }>(
+      quotes.map((quote) => [quote.symbol, { priceUsd: quote.priceUsd, priceVnd: quote.priceVnd, change24hPct: quote.change24hPct }]),
     );
     for (const [symbol, quote] of realQuotes) quoteBySymbol.set(symbol, quote);
     const groups = new Map<string, CryptoTransaction[]>();
@@ -183,7 +184,7 @@ export const cryptoService = {
       groups.set(key, [...(groups.get(key) ?? []), transaction]);
     }
 
-    const holdings: Array<{ coinSymbol: string; wallet: string; qty: string; avgCostVnd: string; currentPriceVnd: string | null; valueVnd: string | null; valueUsd: string | null; pnlVnd: string | null; pnlPct: string | null; change24hPct: string | null; weightPct: string | null }> = [];
+    const holdings: Array<{ coinSymbol: string; wallet: string; qty: string; avgCostVnd: string; avgCostUsd: string; currentPriceVnd: string | null; currentPriceUsd: string | null; valueVnd: string | null; valueUsd: string | null; pnlVnd: string | null; pnlPct: string | null; change24hPct: string | null; weightPct: string | null }> = [];
     let totalValue = new Decimal(0);
     let totalInvested = new Decimal(0);
 
@@ -202,7 +203,11 @@ export const cryptoService = {
         wallet,
         qty: holding.qty.toString(),
         avgCostVnd: holding.avgCostVnd.toFixed(2),
+        // USD-denominated unit prices: use the exchange's raw priceUsd (no VND
+        // round-trip) so the portfolio matches the price card / history exactly.
+        avgCostUsd: holding.avgCostVnd.div(fxRate).toFixed(8),
         currentPriceVnd: currentPrice?.toFixed(2) ?? null,
+        currentPriceUsd: quote?.priceUsd ?? (currentPrice ? currentPrice.div(fxRate).toFixed(8) : null),
         valueVnd: value?.toFixed(2) ?? null,
         valueUsd: value?.div(fxRate).toFixed(2) ?? null,
         pnlVnd: pnl?.pnl.toFixed(2) ?? null,
@@ -231,7 +236,7 @@ export const cryptoService = {
   },
 
   async prices(fxOverride?: number) {
-    const [quotes, providerRate] = await Promise.all([provider.fetchPrices(), provider.fetchFxRate()]);
+    const [quotes, providerRate] = await Promise.all([provider.fetchPrices(), fetchUsdVndRate()]);
     return { quotes, fxRate: fxOverride ?? providerRate };
   },
 };

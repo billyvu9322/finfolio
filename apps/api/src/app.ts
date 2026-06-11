@@ -86,11 +86,15 @@ export async function buildApp(): Promise<FastifyInstance> {
       wildcard: false,
     });
     // SPA fallback: serve index.html for client routes; keep API/docs 404s as-is.
+    // /assets/* (hashed build files) must 404 cleanly when missing — returning
+    // index.html (HTML) for a stale chunk request breaks dynamic imports with a
+    // confusing "Failed to fetch dynamically imported module" instead of a 404.
     app.setNotFoundHandler((request, reply) => {
       if (
         request.method === "GET" &&
         !request.url.startsWith("/v1") &&
-        !request.url.startsWith("/docs")
+        !request.url.startsWith("/docs") &&
+        !request.url.startsWith("/assets/")
       ) {
         return reply.sendFile("index.html");
       }

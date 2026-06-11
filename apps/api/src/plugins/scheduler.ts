@@ -3,15 +3,14 @@ import fp from 'fastify-plugin';
 
 import { env } from '../config/env.js';
 import { snapshotAllUsers } from '../modules/dashboard/snapshot.job.js';
-import { SeedMarketDataProvider } from '../modules/stock/market/SeedMarketDataProvider.js';
-import { refreshStockPrices } from '../modules/stock/market/refreshStockPrices.js';
 
 export const schedulerPlugin = fp(async (fastify) => {
   if (env.ENABLE_PRICE_SCHEDULER) {
-    const stockProvider = new SeedMarketDataProvider();
+    const { stockPriceService } = await import('../modules/stock/stock-price.service.js');
     const stockTask: ScheduledTask = cron.schedule('*/5 * * * *', () => {
-      refreshStockPrices(stockProvider)
-        .then((count) => fastify.log.info(`Stock prices refreshed: ${count}`))
+      stockPriceService
+        .refreshStockPrices()
+        .then((r) => fastify.log.info(`Stock prices refreshed: ${r.refreshed}`))
         .catch((error) => fastify.log.error(error, 'Stock price refresh failed'));
     });
     const snapshotTask: ScheduledTask = cron.schedule('0 0 * * *', () => {

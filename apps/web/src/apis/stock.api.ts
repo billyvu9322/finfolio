@@ -35,3 +35,16 @@ export async function getStockOhlc(symbol: string, range: '1m' | '3m' | '6m' = '
   const { data } = await api.get<Ohlc>(`/stocks/${symbol}/ohlc`, { params: { range } });
   return data;
 }
+
+export interface StockPrice { symbol: string; source: string; price: string; currency: string; fetchedAt: string }
+export interface StockPrices { prices: StockPrice[]; updatedAt: string | null; stale: boolean }
+
+export async function getStockPrices() {
+  const { data } = await api.get<StockPrices>('/stocks/prices');
+  return data;
+}
+
+export async function refreshStockPrices() {
+  const { data } = await api.post<{ refreshed: number }>('/stocks/prices/refresh');
+  return data;
+}

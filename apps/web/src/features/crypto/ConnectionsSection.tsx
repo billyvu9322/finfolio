@@ -91,7 +91,11 @@ export function ConnectionsSection() {
       void queryClient.invalidateQueries({ queryKey: ["crypto"] });
       toast.success(`Đồng bộ xong: +${r.imported} giao dịch.`);
     },
-    onError: () => toast.error("Đồng bộ thất bại."),
+    onError: (err) =>
+      toast.error(
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ??
+          "Đồng bộ thất bại.",
+      ),
   });
 
   const deleteMutation = useMutation({
@@ -166,7 +170,9 @@ export function ConnectionsSection() {
               </button>
             </div>
           </div>
-          {conn.lastError && !health.data?.ok && <p className="mt-2 text-xs text-loss">Lỗi: {conn.lastError}</p>}
+          {conn.lastError && (conn.status === "error" || !health.data?.ok) && (
+            <p className="mt-2 text-xs text-loss">Lỗi: {conn.lastError}</p>
+          )}
         </div>
       ) : (
         <p className="mt-3 text-sm text-neutral-400">

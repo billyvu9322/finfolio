@@ -18,6 +18,8 @@ services:
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required (min 32 chars)}
       JWT_ACCESS_TTL: ${JWT_ACCESS_TTL:-15m}
       JWT_REFRESH_TTL: ${JWT_REFRESH_TTL:-30d}
+      # AES-256-GCM key for encrypting exchange API secrets (base64-encoded 32 bytes).
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:?ENCRYPTION_KEY is required (base64-encoded 32 bytes)}
       ENABLE_PRICE_SCHEDULER: ${ENABLE_PRICE_SCHEDULER:-true}
       LOG_LEVEL: ${LOG_LEVEL:-info}
       # API serves the built SPA from this path inside the image.
@@ -28,6 +30,7 @@ services:
       LLM_MODEL: ${LLM_MODEL:-cx/gpt-5.5}
       # Optional external integrations (leave blank if unused).
       COINGECKO_API_KEY: ${COINGECKO_API_KEY:-}
+      # Optional: real USD→VND rate via exchangerate-api.com. Blank → free open.er-api.com.
       EXCHANGERATE_API_KEY: ${EXCHANGERATE_API_KEY:-}
       REDIS_URL: ${REDIS_URL:-}
     extra_hosts:

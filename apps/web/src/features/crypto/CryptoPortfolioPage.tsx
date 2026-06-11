@@ -1,9 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
+import {
+  AlertTriangle,
+  ShieldCheck,
+  TrendingDown,
+  TrendingUp,
+  XCircle,
+} from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
 import {
+  type CryptoAlert,
   deleteCryptoTx,
   getCoinPrices,
   getCryptoAlerts,
@@ -18,8 +26,20 @@ import { ConnectionsSection } from "./ConnectionsSection";
 const usdt = (value: number) =>
   `${new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(value)} USDT`;
 
+const vnd = (value: number) =>
+  `${new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 0 }).format(value)} ₫`;
+
+const qty = (value: string) =>
+  new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: 8,
+    useGrouping: false,
+  }).format(Number(value));
+
+type Currency = "USDT" | "VND";
+
 export function CryptoPortfolioPage() {
   const [walletFilter, setWalletFilter] = useState("");
+  const [currency, setCurrency] = useState<Currency>("USDT");
   const queryClient = useQueryClient();
   const portfolio = useQuery({
     queryKey: ["crypto", "portfolio"],
@@ -54,16 +74,31 @@ export function CryptoPortfolioPage() {
     onError: () => toast.error("Không thể xóa giao dịch."),
   });
 
-  const fxRate = portfolio.data?.fxRate ?? 25000;
-  // API returns VND; show everything in USDT (≈ USD) = VND / fxRate.
+  const fxRate = portfolio.data?.fxRate ?? 26000;
+  // API returns VND; show in USDT (≈ USD) = VND / fxRate, or raw VND.
   const fmt = (value: string | null | undefined) => {
     if (value == null) return "-";
-    return usdt(Number(value) / fxRate);
+    const num = Number(value);
+    return currency === "VND" ? vnd(num) : usdt(num / fxRate);
+  };
+  // Per-unit prices: use the exact USD value from the API (no VND round-trip) at
+  // up to 8 decimals so they match the price card / history.
+  const price = (
+    vndValue: string | null | undefined,
+    usdValue: string | null | undefined,
+  ) => {
+    if (currency === "VND") return vndValue == null ? "-" : vnd(Number(vndValue));
+    if (usdValue == null) return "-";
+    return `${new Intl.NumberFormat("en-US", { maximumFractionDigits: 8, useGrouping: false }).format(Number(usdValue))} USDT`;
   };
 
   const totals = portfolio.data?.totals;
   const holdings = (portfolio.data?.holdings ?? []).filter(
     (holding) => !walletFilter || holding.wallet === walletFilter,
+  );
+  // Per-(coin,wallet) AI alert lookup → icon next to the coin in the table.
+  const alertByCoin = new Map(
+    (alerts.data ?? []).map((a) => [`${a.coinSymbol}|${a.wallet}`, a]),
   );
   const wallets = [
     ...new Set(
@@ -73,7 +108,6 @@ export function CryptoPortfolioPage() {
   const coinCount = new Set(
     (portfolio.data?.holdings ?? []).map((holding) => holding.coinSymbol),
   ).size;
-  const isEmpty = portfolio.data && portfolio.data.holdings.length === 0;
 
   return (
     <div>
@@ -81,11 +115,30 @@ export function CryptoPortfolioPage() {
         <div>
           <h1 className="text-2xl font-semibold">Quản lý Crypto</h1>
           <p className="mt-1 text-sm text-neutral-400">
-            Theo dõi coin theo từng ví/sàn, giá trị quy đổi theo USDT và P&L chưa
-            thực hiện.
+            Theo dõi coin theo từng ví/sàn, giá trị quy đổi theo {currency} và
+            P&L chưa thực hiện.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
+          <span className="text-xs text-neutral-500">
+            1 USDT ≈ {new Intl.NumberFormat("vi-VN").format(fxRate)} ₫
+          </span>
+          <div className="inline-flex rounded-md border border-neutral-700 p-0.5">
+            {(["USDT", "VND"] as const).map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setCurrency(c)}
+                className={`rounded px-3 py-1.5 text-sm font-medium transition-colors ${
+                  currency === c
+                    ? "bg-neutral-700 text-white"
+                    : "text-neutral-400 hover:text-neutral-200"
+                }`}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
           <Link
             to="/crypto/add"
             className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark"
@@ -119,52 +172,20 @@ export function CryptoPortfolioPage() {
         </div>
       ) : null}
 
-      {!isEmpty ? (
-        <div className="mt-6 rounded-xl border border-neutral-800 bg-neutral-900 p-5">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-base font-semibold">AI Cảnh báo</h2>
+      <div className="mt-6 grid gap-6 lg:grid-cols-[1.7fr_1fr]">
+        {/* Danh mục */}
+        <div className="min-w-0 rounded-xl border border-neutral-800 bg-neutral-900 p-5">
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="text-lg font-medium text-white">Danh mục</h2>
             <button
+              type="button"
               onClick={() => alerts.refetch()}
               disabled={alerts.isFetching}
               className="text-xs text-neutral-400 hover:text-neutral-200 disabled:opacity-50"
             >
-              {alerts.isFetching ? "Đang phân tích…" : "Phân tích lại"}
+              {alerts.isFetching ? "Đang phân tích…" : "Phân tích lại (AI)"}
             </button>
           </div>
-          {alerts.isLoading ? (
-            <p className="text-sm text-neutral-500">Đang phân tích…</p>
-          ) : (alerts.data?.length ?? 0) === 0 ? (
-            <p className="text-sm text-neutral-500">Không có cảnh báo.</p>
-          ) : (
-            <ul className="space-y-3">
-              {alerts.data!.map((a) => (
-                <li key={`${a.coinSymbol}-${a.wallet}`} className="flex gap-3">
-                  <span
-                    className={`mt-1 h-2 w-2 shrink-0 rounded-full ${
-                      a.severity === "critical"
-                        ? "bg-loss"
-                        : a.severity === "warning"
-                          ? "bg-amber-400"
-                          : "bg-neutral-500"
-                    }`}
-                  />
-                  <div>
-                    <div className="text-sm font-medium">{a.title}</div>
-                    <p className="whitespace-pre-line text-sm text-neutral-400">
-                      {a.message}
-                    </p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      ) : null}
-
-      <div className="mt-6 grid gap-6 lg:grid-cols-[1.7fr_1fr]">
-        {/* Danh mục */}
-        <div className="min-w-0 rounded-xl border border-neutral-800 bg-neutral-900 p-5">
-          <h2 className="text-lg font-medium text-white">Danh mục</h2>
           {wallets.length > 1 ? (
             <div className="mt-3 flex flex-wrap gap-2">
               <button
@@ -204,7 +225,10 @@ export function CryptoPortfolioPage() {
               <tbody className="font-mono">
                 {holdings.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="p-6 text-center text-neutral-500">
+                    <td
+                      colSpan={9}
+                      className="p-6 text-center text-neutral-500"
+                    >
                       Không có dữ liệu
                     </td>
                   </tr>
@@ -214,24 +238,46 @@ export function CryptoPortfolioPage() {
                     key={`${holding.coinSymbol}-${holding.wallet}`}
                     className="border-b border-neutral-800/50"
                   >
-                    <td className="p-3 font-sans font-semibold">{holding.coinSymbol}</td>
+                    <td className="p-3 font-sans font-semibold">
+                      <span className="inline-flex items-center gap-1.5">
+                        {holding.coinSymbol}
+                        <AlertIcon
+                          alert={alertByCoin.get(
+                            `${holding.coinSymbol}|${holding.wallet}`,
+                          )}
+                        />
+                      </span>
+                    </td>
                     <td className="p-3">
                       <span className="rounded bg-neutral-800 px-2 py-0.5 text-xs text-neutral-300">
                         {holding.wallet}
                       </span>
                     </td>
-                    <td className="p-3 text-right">{holding.qty}</td>
-                    <td className="p-3 text-right">{fmt(holding.avgCostVnd)}</td>
-                    <td className="p-3 text-right">{fmt(holding.currentPriceVnd)}</td>
+                    <td className="p-3 text-right">{qty(holding.qty)}</td>
+                    <td className="p-3 text-right">
+                      {price(holding.avgCostVnd, holding.avgCostUsd)}
+                    </td>
+                    <td className="p-3 text-right">
+                      {price(holding.currentPriceVnd, holding.currentPriceUsd)}
+                    </td>
                     <td className="p-3 text-right">{fmt(holding.valueVnd)}</td>
-                    <td className={`p-3 text-right ${Number(holding.change24hPct ?? 0) >= 0 ? "text-profit" : "text-loss"}`}>
+                    <td
+                      className={`p-3 text-right ${Number(holding.change24hPct ?? 0) >= 0 ? "text-profit" : "text-loss"}`}
+                    >
                       {holding.change24hPct ?? "-"}%
                     </td>
-                    <td className={`p-3 text-right ${Number(holding.pnlVnd ?? 0) >= 0 ? "text-profit" : "text-loss"}`}>
+                    <td
+                      className={`p-3 text-right ${Number(holding.pnlVnd ?? 0) >= 0 ? "text-profit" : "text-loss"}`}
+                    >
                       {fmt(holding.pnlVnd)}
                     </td>
-                    <td className={`p-3 text-right ${Number(holding.pnlPct ?? 0) >= 0 ? "text-profit" : "text-loss"}`}>
-                      {holding.pnlPct ?? "-"}%
+                    <td
+                      className={`p-3 text-right ${Number(holding.pnlPct ?? 0) >= 0 ? "text-profit" : "text-loss"}`}
+                    >
+                      <span className="inline-flex items-center justify-end gap-1">
+                        <TrendIcon value={holding.pnlPct} />
+                        {holding.pnlPct ?? "-"}%
+                      </span>
                     </td>
                   </tr>
                 ))}
@@ -244,9 +290,12 @@ export function CryptoPortfolioPage() {
         <div className="min-w-0 rounded-xl border border-neutral-800 bg-neutral-900 p-5">
           <div className="flex items-start justify-between gap-2">
             <div>
-              <h2 className="text-lg font-medium text-white">Giá Coin (Binance)</h2>
+              <h2 className="text-lg font-medium text-white">
+                Giá Coin (Binance)
+              </h2>
               <p className="mt-1 text-xs text-neutral-500">
-                Giá thật từ Binance (USDT) cho coin đang giữ — định giá danh mục.
+                Giá thật từ Binance (USDT) cho coin đang giữ — định giá danh
+                mục.
               </p>
             </div>
             <button
@@ -255,7 +304,9 @@ export function CryptoPortfolioPage() {
               disabled={refreshPricesMutation.isPending}
               className="shrink-0 rounded-md border border-neutral-700 px-3 py-1.5 text-xs text-neutral-300 hover:bg-neutral-800 disabled:opacity-50"
             >
-              {refreshPricesMutation.isPending ? "Đang cập nhật..." : "Cập nhật giá"}
+              {refreshPricesMutation.isPending
+                ? "Đang cập nhật..."
+                : "Cập nhật giá"}
             </button>
           </div>
           <div className="mt-4 max-h-[400px] space-y-2 overflow-y-auto pr-1">
@@ -263,7 +314,8 @@ export function CryptoPortfolioPage() {
               <p className="text-sm text-neutral-500">Đang tải...</p>
             ) : (coinPrices.data?.length ?? 0) === 0 ? (
               <p className="text-sm text-neutral-500">
-                Chưa có giá. Thêm giao dịch rồi bấm &quot;Cập nhật giá&quot; để lấy giá Binance.
+                Chưa có giá. Thêm giao dịch rồi bấm &quot;Cập nhật giá&quot; để
+                lấy giá Binance.
               </p>
             ) : (
               coinPrices.data!.map((p) => (
@@ -271,16 +323,28 @@ export function CryptoPortfolioPage() {
                   key={p.coinSymbol}
                   className="flex items-center justify-between rounded-lg border border-neutral-800 bg-neutral-950 p-3"
                 >
-                  <span className="text-sm font-semibold text-white">
+                  <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-white">
+                    <TrendIcon value={p.change24hPct} />
                     {p.coinSymbol}
-                    {p.stale ? <span className="ml-2 text-xs text-amber-400">cũ</span> : null}
+                    {p.stale ? (
+                      <span className="ml-2 text-xs text-amber-400">cũ</span>
+                    ) : null}
                   </span>
                   <span className="flex items-center gap-3 font-mono text-sm">
                     <span className="text-neutral-200">
-                      {new Intl.NumberFormat("en-US", { maximumFractionDigits: 8 }).format(Number(p.priceUsdt))} USDT
+                      {new Intl.NumberFormat("en-US", {
+                        maximumFractionDigits: 8,
+                      }).format(Number(p.priceUsdt))}{" "}
+                      USDT
                     </span>
                     {p.change24hPct != null ? (
-                      <span className={Number(p.change24hPct) >= 0 ? "text-profit" : "text-loss"}>
+                      <span
+                        className={
+                          Number(p.change24hPct) >= 0
+                            ? "text-profit"
+                            : "text-loss"
+                        }
+                      >
                         {Number(p.change24hPct) >= 0 ? "+" : ""}
                         {p.change24hPct}%
                       </span>
@@ -295,7 +359,9 @@ export function CryptoPortfolioPage() {
 
       {/* Lịch sử giao dịch */}
       <div className="mt-6 overflow-x-auto rounded-xl border border-neutral-800 bg-neutral-900">
-        <h2 className="p-5 pb-0 text-lg font-medium text-white">Lịch sử giao dịch</h2>
+        <h2 className="p-5 pb-0 text-lg font-medium text-white">
+          Lịch sử giao dịch
+        </h2>
         <table className="mt-3 w-full text-sm">
           <thead className="text-neutral-400">
             <tr className="border-b border-neutral-800 text-left">
@@ -320,12 +386,20 @@ export function CryptoPortfolioPage() {
               <tr key={tx.id} className="border-b border-neutral-800/50">
                 <td className="p-3 font-sans font-semibold">{tx.coinSymbol}</td>
                 <td className="p-3">
-                  <span className="rounded bg-neutral-800 px-2 py-0.5 text-xs text-neutral-300">{tx.wallet}</span>
+                  <span className="rounded bg-neutral-800 px-2 py-0.5 text-xs text-neutral-300">
+                    {tx.wallet}
+                  </span>
                 </td>
-                <td className={`p-3 font-sans ${tx.action === "sell" ? "text-loss" : "text-profit"}`}>
-                  {tx.action === "sell" ? "Bán" : tx.action === "buy" ? "Mua" : tx.action}
+                <td
+                  className={`p-3 font-sans ${tx.action === "sell" ? "text-loss" : "text-profit"}`}
+                >
+                  {tx.action === "sell"
+                    ? "Bán"
+                    : tx.action === "buy"
+                      ? "Mua"
+                      : tx.action}
                 </td>
-                <td className="p-3 text-right">{tx.quantity}</td>
+                <td className="p-3 text-right">{qty(tx.quantity)}</td>
                 <td className="p-3 text-right">{tx.priceUsd ?? "-"}</td>
                 <td className="p-3 font-sans text-neutral-400">
                   {new Date(tx.transactionAt).toLocaleString("vi-VN")}
@@ -342,7 +416,11 @@ export function CryptoPortfolioPage() {
                     <button
                       type="button"
                       disabled={deleteTxMutation.isPending}
-                      onClick={() => confirmToast("Xóa giao dịch này?", () => deleteTxMutation.mutate(tx.id))}
+                      onClick={() =>
+                        confirmToast("Xóa giao dịch này?", () =>
+                          deleteTxMutation.mutate(tx.id),
+                        )
+                      }
                       className="rounded-md border border-loss/50 px-2 py-1 text-xs text-loss hover:bg-loss/10 disabled:opacity-50"
                     >
                       Xóa
@@ -357,6 +435,42 @@ export function CryptoPortfolioPage() {
 
       <ConnectionsSection />
     </div>
+  );
+}
+
+// Up/down trend arrow for a signed metric (% change, P&L). Green up / red down;
+// nothing for null so empty cells stay clean.
+function TrendIcon({ value }: { value: string | null | undefined }) {
+  if (value == null || value === "") return null;
+  const up = Number(value) >= 0;
+  const Icon = up ? TrendingUp : TrendingDown;
+  return (
+    <Icon
+      className={`h-3.5 w-3.5 shrink-0 ${up ? "text-profit" : "text-loss"}`}
+    />
+  );
+}
+
+const ALERT_TONE = {
+  critical: { Icon: XCircle, cls: "text-loss" },
+  warning: { Icon: AlertTriangle, cls: "text-amber-400" },
+  info: { Icon: ShieldCheck, cls: "text-neutral-500" },
+} as const;
+
+// Severity icon shown next to the coin in the table. The AI analysis is the
+// (native) tooltip — reliable inside the table's horizontal-scroll container,
+// where an absolutely-positioned popover would be clipped. Info → no icon.
+function AlertIcon({ alert }: { alert?: CryptoAlert }) {
+  if (!alert || alert.severity === "info") return null;
+  const { Icon, cls } = ALERT_TONE[alert.severity];
+  return (
+    <span
+      className="inline-flex cursor-help"
+      title={`${alert.title}\n\n${alert.message}`}
+      aria-label={alert.title}
+    >
+      <Icon className={`h-3.5 w-3.5 shrink-0 ${cls}`} />
+    </span>
   );
 }
 

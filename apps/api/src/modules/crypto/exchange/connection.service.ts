@@ -1,16 +1,16 @@
+import Decimal from 'decimal.js';
 import { and, eq, sql } from 'drizzle-orm';
 
 import { db } from '../../../db/index.js';
 import { cryptoTransactions, exchangeConnections, type ExchangeConnection } from '../../../db/schema/index.js';
 import { decryptSecret, encryptSecret, maskSecret } from '../../../lib/crypto-secret.js';
+import { findCoin } from '../crypto.coins.js';
 import { CryptoError } from '../crypto.service.js';
-import { SeedCryptoDataProvider } from '../market/SeedCryptoDataProvider.js';
+import { fetchUsdVndRate } from '../market/FxRateProvider.js';
 import { adapterFor } from './factory.js';
 import { normalizeTrade } from './normalize.js';
 
 export { normalizeTrade };
-
-const fx = new SeedCryptoDataProvider();
 
 function mask(c: ExchangeConnection) {
   return {
@@ -97,34 +97,61 @@ export const connectionService = {
     const adapter = adapterFor(conn.exchange);
     const creds = { apiKey: decryptSecret(conn.apiKeyEnc), apiSecret: decryptSecret(conn.apiSecretEnc) };
     try {
-      const trades = await adapter.fetchTrades(creds, conn.lastSyncAt ?? undefined);
-      const rate = await fx.fetchFxRate();
+      // Snapshot current holdings (incl. Simple Earn). Each coin is upserted as a
+      // single synthetic 'buy' keyed `balance:<coin>` so re-syncing updates the
+      // position in place rather than duplicating. Cost basis = current price
+      // (the exchange doesn't expose original cost for Earn balances).
+      const holdings = await adapter.fetchHoldings(creds);
+      const rate = await fetchUsdVndRate();
       const wallet = conn.label ?? conn.exchange;
-      let imported = 0;
-      for (const t of trades) {
-        const res = await db
-          .insert(cryptoTransactions)
-          .values(normalizeTrade(userId, conn.exchange, wallet, t, rate))
-          .onConflictDoNothing({
-            target: [cryptoTransactions.userId, cryptoTransactions.source, cryptoTransactions.externalTradeId],
-            where: sql`${cryptoTransactions.externalTradeId} is not null`,
-          })
-          .returning({ id: cryptoTransactions.id });
-        if (res.length) imported++;
-      }
       const now = new Date();
+      let imported = 0;
+      for (const h of holdings) {
+        const priceVnd = new Decimal(h.priceUsd).mul(rate).toFixed(2);
+        await db
+          .insert(cryptoTransactions)
+          .values({
+            userId,
+            coinId: findCoin(h.coinSymbol)?.coinId ?? h.coinSymbol.toLowerCase(),
+            coinSymbol: h.coinSymbol,
+            action: 'buy',
+            quantity: h.qty,
+            priceVnd,
+            priceUsd: h.priceUsd,
+            usdVndRate: String(rate),
+            fee: '0',
+            feeCurrency: 'USDT',
+            wallet,
+            transactionAt: now,
+            source: conn.exchange,
+            externalTradeId: `balance:${h.coinSymbol}`,
+          })
+          .onConflictDoUpdate({
+            target: [cryptoTransactions.userId, cryptoTransactions.source, cryptoTransactions.externalTradeId],
+            targetWhere: sql`${cryptoTransactions.externalTradeId} is not null`,
+            set: { quantity: h.qty, priceVnd, priceUsd: h.priceUsd, usdVndRate: String(rate), transactionAt: now },
+          });
+        imported++;
+      }
+      // Pull fresh Binance prices for the newly-held coins so the portfolio shows
+      // real current price / P&L instead of seed fallback. Non-fatal: the snapshot
+      // already succeeded, so a price-fetch hiccup must not fail the sync.
+      const { cryptoPriceService } = await import('../crypto-price.service.js');
+      await cryptoPriceService.refreshCryptoPrices().catch(() => undefined);
       await db
         .update(exchangeConnections)
         .set({ lastSyncAt: now, status: 'active', lastError: null })
         .where(eq(exchangeConnections.id, id));
-      return { imported, skipped: trades.length - imported, lastSyncAt: now };
+      return { imported, skipped: 0, lastSyncAt: now };
     } catch (err) {
       if (err instanceof CryptoError) throw err;
+      const reason = (err as Error).message;
       await db
         .update(exchangeConnections)
-        .set({ status: 'error', lastError: (err as Error).message })
+        .set({ status: 'error', lastError: reason })
         .where(eq(exchangeConnections.id, id));
-      throw new CryptoError(502, 'Đồng bộ sàn thất bại');
+      // 422 (not 5xx) so the central error handler forwards the real reason to the client.
+      throw new CryptoError(422, `Đồng bộ sàn thất bại: ${reason}`);
     }
   },
 };

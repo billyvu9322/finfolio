@@ -3,12 +3,12 @@ import Decimal from 'decimal.js';
 import { db } from '../../db/index.js';
 import { cryptoPrices, cryptoTransactions } from '../../db/schema/index.js';
 import { fetchBinanceTickers } from './market/BinanceTickerProvider.js';
-import { SeedCryptoDataProvider } from './market/SeedCryptoDataProvider.js';
+import { fetchUsdVndRate } from './market/FxRateProvider.js';
 
-const fx = new SeedCryptoDataProvider();
 const STALE_MS = 90 * 60 * 1000; // hourly cron → stale after 90 min
 
 export interface CryptoQuoteLite {
+  priceUsd: string;
   priceVnd: string;
   change24hPct: string | null;
 }
@@ -35,11 +35,12 @@ export const cryptoPriceService = {
 
   /** symbol → { priceVnd, change24hPct } for portfolio valuation (real Binance prices). */
   async getQuotes(): Promise<Map<string, CryptoQuoteLite>> {
-    const rate = await fx.fetchFxRate();
+    const rate = await fetchUsdVndRate();
     const rows = await db.select().from(cryptoPrices);
     const map = new Map<string, CryptoQuoteLite>();
     for (const r of rows) {
       map.set(r.coinSymbol, {
+        priceUsd: r.priceUsdt,
         priceVnd: new Decimal(r.priceUsdt).mul(rate).toFixed(2),
         change24hPct: r.change24hPct,
       });

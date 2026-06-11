@@ -1,8 +1,7 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 
-import { SeedMarketDataProvider } from './market/SeedMarketDataProvider.js';
-import { refreshStockPrices } from './market/refreshStockPrices.js';
+import { stockPriceService } from './stock-price.service.js';
 import {
   createStockTxSchema,
   listStockTxQuerySchema,
@@ -72,7 +71,7 @@ export const stockRoutes: FastifyPluginAsyncZod = async (fastify) => {
 
   fastify.get('/prices', { schema: { tags: ['stock'], response: { 200: stockPricesSchema } } }, async (_request, reply) => reply.send(await stockService.prices()));
 
-  fastify.post('/prices/refresh', { schema: { tags: ['stock'], response: { 200: z.object({ refreshed: z.number() }) } } }, async (_request, reply) => reply.send({ refreshed: await refreshStockPrices(new SeedMarketDataProvider()) }));
+  fastify.post('/prices/refresh', { schema: { tags: ['stock'], response: { 200: z.object({ refreshed: z.number() }) } } }, async (_request, reply) => reply.send(await stockPriceService.refreshStockPrices()));
 
   fastify.get(
     '/:symbol/ohlc',

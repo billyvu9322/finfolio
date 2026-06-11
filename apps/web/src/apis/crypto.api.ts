@@ -11,7 +11,9 @@ export interface CryptoHolding {
   wallet: string;
   qty: string;
   avgCostVnd: string;
+  avgCostUsd: string;
   currentPriceVnd: string | null;
+  currentPriceUsd: string | null;
   valueVnd: string | null;
   valueUsd: string | null;
   pnlVnd: string | null;

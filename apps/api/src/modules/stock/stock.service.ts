@@ -4,6 +4,7 @@ import { and, count, desc, eq, gte, lte, type SQL } from 'drizzle-orm';
 import { db } from '../../db/index.js';
 import { priceCache, stockTransactions, type StockTransaction } from '../../db/schema/index.js';
 import { SeedMarketDataProvider } from './market/SeedMarketDataProvider.js';
+import { fetchVciOhlc } from './market/VciTickerProvider.js';
 import { computeHolding, computeStockFees, heldQty, unrealizedPnl, type StockTx } from './stockMath.js';
 import type { CreateStockTxBody, ListStockTxQuery, UpdateStockTxBody } from './stock.schema.js';
 import { findSymbol } from './stock.symbols.js';
@@ -132,8 +133,10 @@ export const stockService = {
 
   async ohlc(userId: string, symbol: string, range: '1m' | '3m' | '6m') {
     const normalized = symbol.toUpperCase();
+    // Real VCI candles; fall back to the seed provider so charts never break.
+    const candlesPromise = fetchVciOhlc(normalized, range).catch(() => provider.fetchOhlc(normalized, range));
     const [candles, trades] = await Promise.all([
-      provider.fetchOhlc(normalized, range),
+      candlesPromise,
       db.query.stockTransactions.findMany({ where: and(eq(stockTransactions.userId, userId), eq(stockTransactions.symbol, normalized)) }),
     ]);
     return { candles, markers: trades.filter((trade) => trade.action === 'buy' || trade.action === 'sell').map((trade) => ({ time: trade.transactionAt.toISOString().slice(0, 10), action: trade.action, price: trade.price })) };

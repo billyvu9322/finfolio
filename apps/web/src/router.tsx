@@ -14,8 +14,34 @@ import { useAuthStore } from '@/stores/auth';
 
 type RoutePage = () => JSX.Element;
 
+/**
+ * Wraps a dynamic import so a stale lazy-chunk (hash changed after a redeploy →
+ * old `assets/*.js` is gone → "Failed to fetch dynamically imported module")
+ * triggers exactly one full reload to pull the fresh index.html + new hashes.
+ * A sessionStorage guard prevents a reload loop; it clears on any success.
+ */
+const RELOAD_KEY = 'chunk-reload';
+function importWithReload<T>(loader: () => Promise<T>): Promise<T> {
+  return loader().then(
+    (module) => {
+      sessionStorage.removeItem(RELOAD_KEY);
+      return module;
+    },
+    (err: unknown) => {
+      const message = err instanceof Error ? err.message : String(err);
+      const isChunkError = /dynamically imported module|Importing a module script failed|Failed to fetch/i.test(message);
+      if (isChunkError && !sessionStorage.getItem(RELOAD_KEY)) {
+        sessionStorage.setItem(RELOAD_KEY, '1');
+        window.location.reload();
+        return new Promise<T>(() => {}); // hang until the reload swaps the page
+      }
+      throw err;
+    },
+  );
+}
+
 function lazyPage<M extends Record<string, ComponentType<Record<string, never>>>>(loader: () => Promise<M>, name: keyof M): RoutePage {
-  const Component = lazy(() => loader().then((module) => ({ default: module[name] as ComponentType<Record<string, never>> })));
+  const Component = lazy(() => importWithReload(loader).then((module) => ({ default: module[name] as ComponentType<Record<string, never>> })));
   return () => (
     <Suspense fallback={<RouteFallback />}>
       <Component />
@@ -54,7 +80,7 @@ const child = <TPath extends string>(path: TPath, component: RoutePage) => creat
 const dashboardRoute = child('/dashboard', lazyPage(() => import('@/features/dashboard/DashboardPage'), 'DashboardPage'));
 const goldRoute = child('/gold', lazyPage(() => import('@/features/gold/GoldPage'), 'GoldPage'));
 const goldAddRoute = child('/gold/add', lazyPage(() => import('@/features/gold/GoldAddPage'), 'GoldAddPage'));
-const GoldEditLazy = lazy(() => import('@/features/gold/GoldAddPage').then((module) => ({ default: module.GoldAddPage })));
+const GoldEditLazy = lazy(() => importWithReload(() => import('@/features/gold/GoldAddPage')).then((module) => ({ default: module.GoldAddPage })));
 const goldEditRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/gold/$transactionId',
@@ -69,7 +95,7 @@ const goldEditRoute = createRoute({
 });
 const stocksRoute = child('/stocks', lazyPage(() => import('@/features/stock/StockPortfolioPage'), 'StockPortfolioPage'));
 const stocksAddRoute = child('/stocks/add', lazyPage(() => import('@/features/stock/StockAddPage'), 'StockAddPage'));
-const StockDetailLazy = lazy(() => import('@/features/stock/StockDetailPage').then((module) => ({ default: module.StockDetailPage })));
+const StockDetailLazy = lazy(() => importWithReload(() => import('@/features/stock/StockDetailPage')).then((module) => ({ default: module.StockDetailPage })));
 const stockDetailRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/stocks/$symbol',
@@ -84,7 +110,7 @@ const stockDetailRoute = createRoute({
 });
 const cryptoRoute = child('/crypto', lazyPage(() => import('@/features/crypto/CryptoPortfolioPage'), 'CryptoPortfolioPage'));
 const cryptoAddRoute = child('/crypto/add', lazyPage(() => import('@/features/crypto/CryptoAddPage'), 'CryptoAddPage'));
-const CryptoEditLazy = lazy(() => import('@/features/crypto/CryptoAddPage').then((module) => ({ default: module.CryptoAddPage })));
+const CryptoEditLazy = lazy(() => importWithReload(() => import('@/features/crypto/CryptoAddPage')).then((module) => ({ default: module.CryptoAddPage })));
 const cryptoEditRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/crypto/$transactionId',
