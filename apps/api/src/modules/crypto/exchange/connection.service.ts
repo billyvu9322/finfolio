@@ -1,5 +1,5 @@
 import Decimal from 'decimal.js';
-import { and, eq, sql } from 'drizzle-orm';
+import { and, eq, like, notInArray, sql } from 'drizzle-orm';
 
 import { db } from '../../../db/index.js';
 import { cryptoTransactions, exchangeConnections, type ExchangeConnection } from '../../../db/schema/index.js';
@@ -133,6 +133,19 @@ export const connectionService = {
           });
         imported++;
       }
+      // Remove stale snapshot rows for coins no longer held (or that an earlier
+      // buggy sync wrote) — otherwise an old `balance:<coin>` lingers with a wrong
+      // quantity because the upsert above only touches currently-returned coins.
+      const keep = holdings.map((h) => `balance:${h.coinSymbol}`);
+      await db.delete(cryptoTransactions).where(
+        and(
+          eq(cryptoTransactions.userId, userId),
+          eq(cryptoTransactions.source, conn.exchange),
+          like(cryptoTransactions.externalTradeId, 'balance:%'),
+          ...(keep.length ? [notInArray(cryptoTransactions.externalTradeId, keep)] : []),
+        ),
+      );
+      console.info(`[sync] ${conn.exchange} snapshot: ${imported} coins [${keep.join(', ')}]`);
       // Pull fresh Binance prices for the newly-held coins so the portfolio shows
       // real current price / P&L instead of seed fallback. Non-fatal: the snapshot
       // already succeeded, so a price-fetch hiccup must not fail the sync.

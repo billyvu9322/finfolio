@@ -30,6 +30,14 @@ interface CrossMarginAccount {
 interface IsolatedMarginAccount {
   assets: Array<{ baseAsset: MarginAsset; quoteAsset: MarginAsset }>;
 }
+interface EarnFlexiblePosition {
+  rows: Array<{ asset: string; totalAmount: string }>;
+  total: number;
+}
+interface EarnLockedPosition {
+  rows: Array<{ asset: string; amount: string }>;
+  total: number;
+}
 interface BinanceFill {
   id: number;
   qty: string;
@@ -113,13 +121,16 @@ export class BinanceAdapter implements ExchangeAdapter {
   }
 
   /**
-   * Snapshot current holdings across the spot account (incl. Simple Earn
-   * `LD<COIN>` synthetic assets, e.g. LDXRP = XRP in Earn) and the cross +
-   * isolated margin accounts (net asset). Each coin is resolved to its base
-   * symbol, quantities summed, and valued at the live `<COIN>USDT` price.
-   * Coins with no USDT spot pair (can't be priced) and stablecoins are skipped.
-   * Margin reads are best-effort: a key without margin permission (403) is
-   * skipped rather than failing the whole sync.
+   * Snapshot current holdings across spot, Simple Earn (Flexible + Locked), and
+   * cross + isolated margin (net asset). Quantities are summed per base symbol
+   * and valued at the live `<COIN>USDT` price; coins with no USDT pair and
+   * stablecoins are skipped. Earn/margin reads are best-effort — a key without
+   * the relevant permission (403) is skipped, never fails the whole sync.
+   *
+   * NOTE: Simple Earn balances come from the dedicated `/sapi/v1/simple-earn/*`
+   * endpoints, NOT the `LD<COIN>` shadow assets in `/api/v3/account` (legacy
+   * Lending; unreliable/dust — they gave wrong quantities). LD-prefixed spot
+   * balances are therefore ignored to avoid wrong qty and double-counting.
    */
   async fetchHoldings(creds: ExchangeCreds): Promise<NormalizedHolding[]> {
     const [acct, priceRes] = await Promise.all([
@@ -135,36 +146,74 @@ export class BinanceAdapter implements ExchangeAdapter {
     }
 
     const qtyByCoin = new Map<string, Decimal>();
-    const add = (rawAsset: string, amount: Decimal, earn = false) => {
+    const add = (rawAsset: string, amount: Decimal) => {
       if (amount.lte(0)) return;
-      let sym = rawAsset.toUpperCase();
-      // Resolve Simple Earn (LD-prefixed) only when the stripped symbol is a real
-      // priced coin — avoids mangling genuine tickers like LDO (Lido).
-      if (earn && !usdtPrice.has(sym) && sym.startsWith('LD') && usdtPrice.has(sym.slice(2))) {
-        sym = sym.slice(2);
-      }
+      const sym = rawAsset.toUpperCase();
       if (STABLE.has(sym) || !usdtPrice.has(sym)) return;
       qtyByCoin.set(sym, (qtyByCoin.get(sym) ?? new Decimal(0)).plus(amount));
     };
 
-    // Spot + Simple Earn
-    for (const b of acct.balances) add(b.asset, new Decimal(b.free).plus(b.locked), true);
+    // Best-effort signed GET that logs (instead of hiding) why a source was skipped.
+    const tryGet = async <T>(path: string, params: Record<string, string> = {}): Promise<T | null> => {
+      try {
+        return await signedGet<T>(creds, path, params);
+      } catch (err) {
+        console.warn(`[binance] ${path} skipped: ${(err as Error).message}`);
+        return null;
+      }
+    };
+
+    // Spot — skip LD<COIN> (legacy Lending shadow; real Earn comes from the
+    // Simple Earn endpoints below).
+    const spotAssets = acct.balances.filter((b) => new Decimal(b.free).plus(b.locked).gt(0));
+    for (const b of spotAssets) {
+      if (b.asset.toUpperCase().startsWith('LD')) continue;
+      add(b.asset, new Decimal(b.free).plus(b.locked));
+    }
+
+    // Simple Earn — Flexible (best-effort). totalAmount = real principal.
+    const flex = await tryGet<EarnFlexiblePosition>('/sapi/v1/simple-earn/flexible/position', { size: '100' });
+    for (const r of flex?.rows ?? []) add(r.asset, new Decimal(r.totalAmount));
+
+    // Simple Earn — Locked (best-effort).
+    const locked = await tryGet<EarnLockedPosition>('/sapi/v1/simple-earn/locked/position', { size: '100' });
+    for (const r of locked?.rows ?? []) add(r.asset, new Decimal(r.amount));
 
     // Cross margin (best-effort — needs margin read permission).
-    const cross = await signedGet<CrossMarginAccount>(creds, '/sapi/v1/margin/account').catch(() => null);
+    const cross = await tryGet<CrossMarginAccount>('/sapi/v1/margin/account');
     for (const a of cross?.userAssets ?? []) add(a.asset, new Decimal(a.netAsset));
 
     // Isolated margin (best-effort).
-    const iso = await signedGet<IsolatedMarginAccount>(creds, '/sapi/v1/margin/isolated/account').catch(() => null);
+    const iso = await tryGet<IsolatedMarginAccount>('/sapi/v1/margin/isolated/account');
     for (const pair of iso?.assets ?? []) {
       add(pair.baseAsset.asset, new Decimal(pair.baseAsset.netAsset));
       add(pair.quoteAsset.asset, new Decimal(pair.quoteAsset.netAsset));
     }
 
-    return [...qtyByCoin.entries()].map(([coinSymbol, qty]) => ({
+    const result = [...qtyByCoin.entries()].map(([coinSymbol, qty]) => ({
       coinSymbol,
       qty: qty.toString(),
       priceUsd: usdtPrice.get(coinSymbol)!,
     }));
+    // Verbose source attribution — pinpoints where each quantity originates.
+    console.info('[binance] flex rows: ' + JSON.stringify(flex?.rows ?? []));
+    console.info('[binance] locked rows: ' + JSON.stringify(locked?.rows ?? []));
+    console.info(
+      '[binance] spot>0: ' +
+        spotAssets.map((b) => `${b.asset}:${new Decimal(b.free).plus(b.locked).toString()}`).join(', '),
+    );
+    console.info(
+      '[binance] cross>0: ' +
+        (cross?.userAssets ?? [])
+          .filter((a) => new Decimal(a.netAsset).gt(0))
+          .map((a) => `${a.asset}:${a.netAsset}`)
+          .join(', '),
+    );
+    console.info(
+      `[binance] holdings — spot:${spotAssets.length} flexEarn:${flex?.rows?.length ?? 'skip'} ` +
+        `lockedEarn:${locked?.rows?.length ?? 'skip'} cross:${cross?.userAssets?.length ?? 'skip'} ` +
+        `iso:${iso?.assets?.length ?? 'skip'} → ${result.map((r) => `${r.coinSymbol}:${r.qty}`).join(', ')}`,
+    );
+    return result;
   }
 }

@@ -44,9 +44,14 @@ whitelist + current balance. User's coins live in **Binance Simple Earn** (repor
 `LD<COIN>` assets, e.g. `LDXRP`) → nothing synced. The silent `.catch(() => [])` masked the real reason.
 
 - New `ExchangeAdapter.fetchHoldings()` + `NormalizedHolding`. `BinanceAdapter.fetchHoldings`:
-  reads `/api/v3/account` + `/api/v3/ticker/price`, **resolves `LD<COIN>` → base coin** (only when the
-  stripped symbol has a real USDT pair — avoids mangling `LDO`/Lido), sums Spot + Earn quantities,
-  values at live `<COIN>USDT`. No whitelist gate → PAXG, XRP, etc. all included.
+  reads `/api/v3/account` + `/api/v3/ticker/price`, sums per base symbol, values at live `<COIN>USDT`.
+  No whitelist gate → PAXG, XRP, etc. all included.
+- **Earn quantity fix (correction):** the first version read Earn from the `LD<COIN>` shadow assets in
+  `/api/v3/account` — that's the **legacy Lending** view and returned wrong/dust amounts (XRP showed
+  `1e-8`). Corrected to the dedicated **Simple Earn** endpoints:
+  `/sapi/v1/simple-earn/flexible/position` (`rows[].totalAmount`) +
+  `/sapi/v1/simple-earn/locked/position` (`rows[].amount`). `LD`-prefixed spot balances are now skipped
+  to avoid wrong qty + double-counting. Both reads best-effort (403 → skip).
 - **Margin merged**: cross (`/sapi/v1/margin/account`) + isolated
   (`/sapi/v1/margin/isolated/account`), `netAsset > 0`. Best-effort — `403` (key without margin perm)
   is caught and skipped, never fails the sync.
