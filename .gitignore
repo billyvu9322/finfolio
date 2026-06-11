@@ -30,3 +30,7 @@ coverage/
 
 # Docker volumes
 .docker/pgdata/
+
+*.zip
+
+.turbo

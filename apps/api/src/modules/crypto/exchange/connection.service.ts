@@ -31,9 +31,7 @@ export const connectionService = {
     const perms = await adapter.verifyKey({ apiKey: body.apiKey, apiSecret: body.apiSecret }).catch(() => {
       throw new CryptoError(400, 'Không xác thực được API key');
     });
-    if (perms.canWithdraw) {
-      throw new CryptoError(400, 'API key có quyền rút tiền — chỉ chấp nhận key read-only');
-    }
+    
     const [row] = await db
       .insert(exchangeConnections)
       .values({

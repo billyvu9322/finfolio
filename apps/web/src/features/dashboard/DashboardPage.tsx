@@ -119,6 +119,8 @@ export function DashboardPage() {
                     background: "#18181b",
                     border: "1px solid #3f3f46",
                   }}
+                  labelStyle={{ color: "#f4f4f5" }}
+                  itemStyle={{ color: "#e4e4e7" }}
                 />
                 <Area
                   type="monotone"
@@ -162,6 +164,8 @@ export function DashboardPage() {
                     background: "#18181b",
                     border: "1px solid #3f3f46",
                   }}
+                  labelStyle={{ color: "#f4f4f5" }}
+                  itemStyle={{ color: "#e4e4e7" }}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -231,10 +235,10 @@ export function DashboardPage() {
             ))}
           </ul>
         </Panel>
-        <Panel title="Top movers" className="lg:col-span-1">
+        <Panel title="Mục dẫn đầu" className="lg:col-span-1">
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <div className="mb-2 text-xs text-neutral-500">Gainers</div>
+              <div className="mb-2 text-xs text-neutral-500">Tăng giá</div>
               {movers.data?.gainers.map((item) => (
                 <div
                   key={`${item.assetClass}-${item.label}`}
@@ -246,7 +250,7 @@ export function DashboardPage() {
               ))}
             </div>
             <div>
-              <div className="mb-2 text-xs text-neutral-500">Losers</div>
+              <div className="mb-2 text-xs text-neutral-500">Thua cuộc</div>
               {movers.data?.losers.map((item) => (
                 <div
                   key={`${item.assetClass}-${item.label}`}

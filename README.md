@@ -109,9 +109,12 @@ unzip finfolio-release.zip -d finfolio && cd finfolio
 cp .env.prod.example .env.prod         # edit: DATABASE_URL (existing PG), JWT_SECRET, hostnames
 
 # 3. Build, migrate the existing DB, start
-docker compose --env-file .env.prod -f docker-compose.prod.yml build
-sh scripts/migrate.sh                  # runs drizzle migrations against DATABASE_URL
-docker compose --env-file .env.prod -f docker-compose.prod.yml up -d
+
+rm -r finfolio
+unzip finfolio.zip -d finfolio && cd finfolio
+docker compose --env-file .env.production up -d --build
+docker compose --env-file .env.production run --rm app pnpm --filter @finfolio/api db:migrate  
+docker compose logs -f app
 ```
 
 The Cloudflare Tunnel maps the public hostname to `web` (`127.0.0.1:8080`) and `/v1/*` to `api`

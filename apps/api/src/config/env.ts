@@ -17,9 +17,28 @@ function resolveEnvRootDir(fromDir: string): string {
 
 const rootDir = resolveEnvRootDir(dirname(fileURLToPath(import.meta.url)));
 const nodeEnv = process.env.NODE_ENV ?? "development";
+
+function loadEnvFallback(filePath: string) {
+  const lines = fs.readFileSync(filePath, "utf8").split(/\r?\n/);
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    const separatorIndex = trimmed.indexOf("=");
+    if (separatorIndex <= 0) continue;
+
+    const name = trimmed.slice(0, separatorIndex).trim();
+    const rawValue = trimmed.slice(separatorIndex + 1).trim();
+    const value = rawValue.replace(/^("|')|("|')$/g, "");
+    if (process.env[name] == null) process.env[name] = value;
+  }
+}
+
 for (const file of [`.env.${nodeEnv}`, ".env"]) {
   const filePath = join(rootDir, file);
-  if (fs.existsSync(filePath)) process.loadEnvFile(filePath);
+  if (fs.existsSync(filePath)) {
+    process.loadEnvFile(filePath);
+    loadEnvFallback(filePath);
+  }
 }
 
 const envSchema = z.object({

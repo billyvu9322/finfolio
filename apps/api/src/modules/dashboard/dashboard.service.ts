@@ -5,6 +5,7 @@ import { db } from '../../db/index.js';
 import { cryptoTransactions, goldTransactions, portfolioSnapshots, stockTransactions } from '../../db/schema/index.js';
 import { getAssetSummaries, type AssetClass } from './aggregator.js';
 import { computeBreakdown } from './breakdown.js';
+import { computeTopMovers } from './top-movers.js';
 
 const PERIOD_DAYS: Record<string, number | null> = { '7d': 7, '1m': 30, '3m': 90, '1y': 365, all: null };
 
@@ -90,9 +91,7 @@ export const dashboardService = {
 
   async topMovers(userId: string) {
     const summaries = await getAssetSummaries(userId);
-    const movers = summaries.flatMap((summary) => summary.holdings).filter((holding) => holding.pnlPct !== null).sort((a, b) => b.pnlPct!.minus(a.pnlPct!).toNumber());
-    const map = (holding: (typeof movers)[number]) => ({ assetClass: holding.assetClass, label: holding.label, pnlPct: holding.pnlPct!.toFixed(2) });
-    return { gainers: movers.slice(0, 3).map(map), losers: movers.slice(-3).reverse().map(map) };
+    return computeTopMovers(summaries.flatMap((summary) => summary.holdings));
   },
 
   async createSnapshot(userId: string) {
