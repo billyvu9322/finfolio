@@ -52,6 +52,11 @@ whitelist + current balance. User's coins live in **Binance Simple Earn** (repor
   `/sapi/v1/simple-earn/flexible/position` (`rows[].totalAmount`) +
   `/sapi/v1/simple-earn/locked/position` (`rows[].amount`). `LD`-prefixed spot balances are now skipped
   to avoid wrong qty + double-counting. Both reads best-effort (403 → skip).
+- **Flexible Loan collateral (further fix):** assets pledged as collateral for a Binance Flexible Loan
+  leave the Earn/spot balances (flexible `totalAmount` excludes them → coin showed ~`1e-8` dust). Added
+  `GET /sapi/v2/loan/flexible/ongoing/orders` → `add(collateralCoin, collateralAmount)`. Best-effort.
+  `connection.service.sync` also now **deletes stale `balance:<coin>` rows** not in the new snapshot, so
+  an earlier buggy sync's wrong quantity can't linger. Verbose per-source logging added to `fetchHoldings`.
 - **Margin merged**: cross (`/sapi/v1/margin/account`) + isolated
   (`/sapi/v1/margin/isolated/account`), `netAsset > 0`. Best-effort — `403` (key without margin perm)
   is caught and skipped, never fails the sync.

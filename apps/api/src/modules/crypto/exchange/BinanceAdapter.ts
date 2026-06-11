@@ -38,6 +38,10 @@ interface EarnLockedPosition {
   rows: Array<{ asset: string; amount: string }>;
   total: number;
 }
+interface FlexibleLoanOrders {
+  rows: Array<{ loanCoin: string; totalDebt: string; collateralCoin: string; collateralAmount: string }>;
+  total: number;
+}
 interface BinanceFill {
   id: number;
   qty: string;
@@ -179,6 +183,12 @@ export class BinanceAdapter implements ExchangeAdapter {
     const locked = await tryGet<EarnLockedPosition>('/sapi/v1/simple-earn/locked/position', { size: '100' });
     for (const r of locked?.rows ?? []) add(r.asset, new Decimal(r.amount));
 
+    // Flexible Loan collateral (best-effort). Assets pledged as loan collateral
+    // are NOT in the spot/Earn balances (flexible `totalAmount` excludes them),
+    // so the collateral coin must be counted here or it shows up as ~0 dust.
+    const loan = await tryGet<FlexibleLoanOrders>('/sapi/v2/loan/flexible/ongoing/orders', { limit: '100' });
+    for (const r of loan?.rows ?? []) add(r.collateralCoin, new Decimal(r.collateralAmount));
+
     // Cross margin (best-effort — needs margin read permission).
     const cross = await tryGet<CrossMarginAccount>('/sapi/v1/margin/account');
     for (const a of cross?.userAssets ?? []) add(a.asset, new Decimal(a.netAsset));
@@ -198,6 +208,7 @@ export class BinanceAdapter implements ExchangeAdapter {
     // Verbose source attribution — pinpoints where each quantity originates.
     console.info('[binance] flex rows: ' + JSON.stringify(flex?.rows ?? []));
     console.info('[binance] locked rows: ' + JSON.stringify(locked?.rows ?? []));
+    console.info('[binance] loan collateral: ' + JSON.stringify(loan?.rows ?? []));
     console.info(
       '[binance] spot>0: ' +
         spotAssets.map((b) => `${b.asset}:${new Decimal(b.free).plus(b.locked).toString()}`).join(', '),
@@ -211,8 +222,9 @@ export class BinanceAdapter implements ExchangeAdapter {
     );
     console.info(
       `[binance] holdings — spot:${spotAssets.length} flexEarn:${flex?.rows?.length ?? 'skip'} ` +
-        `lockedEarn:${locked?.rows?.length ?? 'skip'} cross:${cross?.userAssets?.length ?? 'skip'} ` +
-        `iso:${iso?.assets?.length ?? 'skip'} → ${result.map((r) => `${r.coinSymbol}:${r.qty}`).join(', ')}`,
+        `lockedEarn:${locked?.rows?.length ?? 'skip'} loan:${loan?.rows?.length ?? 'skip'} ` +
+        `cross:${cross?.userAssets?.length ?? 'skip'} iso:${iso?.assets?.length ?? 'skip'} ` +
+        `→ ${result.map((r) => `${r.coinSymbol}:${r.qty}`).join(', ')}`,
     );
     return result;
   }

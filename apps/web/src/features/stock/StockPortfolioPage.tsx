@@ -86,74 +86,80 @@ export function StockPortfolioPage() {
         />
         <Kpi label="Cổ tức" value={vnd(totals?.dividendIncome)} />
       </div>
-      <div className="overflow-x-auto rounded-xl border border-neutral-800 bg-neutral-900">
-        <table className="w-full text-sm">
-          <thead className="text-neutral-400">
-            <tr className="border-b border-neutral-800 text-left">
-              <th className="p-3">Mã</th>
-              <th className="p-3 text-right">SL</th>
-              <th className="p-3 text-right">WAVG</th>
-              <th className="p-3 text-right">Giá</th>
-              <th className="p-3 text-right">Giá trị</th>
-              <th className="p-3 text-right">P&L</th>
-              <th className="p-3 text-right">%P&L</th>
-              <th className="p-3 text-right">Cổ tức</th>
-            </tr>
-          </thead>
-          <tbody className="font-mono">
-            {(portfolio.data?.holdings.length ?? 0) === 0 ? (
-              <tr>
-                <td colSpan={8} className="p-6 text-center text-neutral-500">
-                  Không có dữ liệu
-                </td>
-              </tr>
-            ) : null}
-            {portfolio.data?.holdings.map((holding) => (
-              <tr
-                key={holding.symbol}
-                className="border-b border-neutral-800/50"
-              >
-                <td className="p-3 font-sans">
-                  <Link
-                    to="/stocks/$symbol"
-                    params={{ symbol: holding.symbol }}
-                    className="text-brand hover:underline"
+      <div className="grid gap-6 lg:grid-cols-[1.7fr_1fr]">
+        {/* Danh mục */}
+        <div className="min-w-0 rounded-xl border border-neutral-800 bg-neutral-900 p-5">
+          <h2 className="text-lg font-medium text-white">Danh mục</h2>
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="text-neutral-400">
+                <tr className="border-b border-neutral-800 text-left">
+                  <th className="p-3">Mã</th>
+                  <th className="p-3 text-right">SL</th>
+                  <th className="p-3 text-right">WAVG</th>
+                  <th className="p-3 text-right">Giá</th>
+                  <th className="p-3 text-right">Giá trị</th>
+                  <th className="p-3 text-right">P&L</th>
+                  <th className="p-3 text-right">%P&L</th>
+                  <th className="p-3 text-right">Cổ tức</th>
+                </tr>
+              </thead>
+              <tbody className="font-mono">
+                {(portfolio.data?.holdings.length ?? 0) === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="p-6 text-center text-neutral-500">
+                      Không có dữ liệu
+                    </td>
+                  </tr>
+                ) : null}
+                {portfolio.data?.holdings.map((holding) => (
+                  <tr
+                    key={holding.symbol}
+                    className="border-b border-neutral-800/50"
                   >
-                    {holding.symbol}
-                  </Link>
-                  <span className="ml-2 text-xs text-neutral-500">
-                    {holding.exchange}
-                  </span>
-                </td>
-                <td className="p-3 text-right">{holding.qty}</td>
-                <td className="p-3 text-right">{vnd(holding.avgCost)}</td>
-                <td className="p-3 text-right">{vnd(holding.currentPrice)}</td>
-                <td className="p-3 text-right">{vnd(holding.value)}</td>
-                <td
-                  className={`p-3 text-right ${Number(holding.pnl ?? 0) >= 0 ? "text-profit" : "text-loss"}`}
-                >
-                  {vnd(holding.pnl)}
-                </td>
-                <td
-                  className={`p-3 text-right ${Number(holding.pnlPct ?? 0) >= 0 ? "text-profit" : "text-loss"}`}
-                >
-                  <span className="inline-flex items-center justify-end gap-1">
-                    <TrendIcon value={holding.pnlPct} />
-                    {holding.pnlPct ?? "-"}%
-                  </span>
-                </td>
-                <td className="p-3 text-right">
-                  {vnd(holding.dividendIncome)}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                    <td className="p-3 font-sans">
+                      <Link
+                        to="/stocks/$symbol"
+                        params={{ symbol: holding.symbol }}
+                        className="text-brand hover:underline"
+                      >
+                        {holding.symbol}
+                      </Link>
+                      <span className="ml-2 text-xs text-neutral-500">
+                        {holding.exchange}
+                      </span>
+                    </td>
+                    <td className="p-3 text-right">{holding.qty}</td>
+                    <td className="p-3 text-right">{vnd(holding.avgCost)}</td>
+                    <td className="p-3 text-right">
+                      {vnd(holding.currentPrice)}
+                    </td>
+                    <td className="p-3 text-right">{vnd(holding.value)}</td>
+                    <td
+                      className={`p-3 text-right ${Number(holding.pnl ?? 0) >= 0 ? "text-profit" : "text-loss"}`}
+                    >
+                      {vnd(holding.pnl)}
+                    </td>
+                    <td
+                      className={`p-3 text-right ${Number(holding.pnlPct ?? 0) >= 0 ? "text-profit" : "text-loss"}`}
+                    >
+                      <span className="inline-flex items-center justify-end gap-1">
+                        <TrendIcon value={holding.pnlPct} />
+                        {holding.pnlPct ?? "-"}%
+                      </span>
+                    </td>
+                    <td className="p-3 text-right">
+                      {vnd(holding.dividendIncome)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
 
-      {/* Giá thị trường (VCI) */}
-      <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-5">
-        <div className="flex items-start justify-between gap-2">
+        {/* Giá thị trường (VCI) */}
+        <div className="min-w-0 rounded-xl border border-neutral-800 bg-neutral-900 p-5">
           <div>
             <h2 className="text-lg font-medium text-white">Giá thị trường</h2>
             <p className="mt-1 text-xs text-neutral-500">
@@ -163,29 +169,29 @@ export function StockPortfolioPage() {
               ) : null}
             </p>
           </div>
-        </div>
-        <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-          {prices.isLoading ? (
-            <p className="text-sm text-neutral-500">Đang tải...</p>
-          ) : (prices.data?.prices.length ?? 0) === 0 ? (
-            <p className="text-sm text-neutral-500">
-              Chưa có giá. Bấm &quot;Cập nhật giá&quot; để lấy giá VCI.
-            </p>
-          ) : (
-            prices.data!.prices.map((p) => (
-              <div
-                key={p.symbol}
-                className="flex items-center justify-between rounded-lg border border-neutral-800 bg-neutral-950 p-3"
-              >
-                <span className="text-sm font-semibold text-white">
-                  {p.symbol}
-                </span>
-                <span className="font-mono text-sm text-neutral-200">
-                  {vnd(p.price)}
-                </span>
-              </div>
-            ))
-          )}
+          <div className="mt-4 max-h-[400px] space-y-2 overflow-y-auto pr-1">
+            {prices.isLoading ? (
+              <p className="text-sm text-neutral-500">Đang tải...</p>
+            ) : (prices.data?.prices.length ?? 0) === 0 ? (
+              <p className="text-sm text-neutral-500">
+                Chưa có giá. Bấm &quot;Cập nhật giá&quot; để lấy giá VCI.
+              </p>
+            ) : (
+              prices.data!.prices.map((p) => (
+                <div
+                  key={p.symbol}
+                  className="flex items-center justify-between rounded-lg border border-neutral-800 bg-neutral-950 p-3"
+                >
+                  <span className="text-sm font-semibold text-white">
+                    {p.symbol}
+                  </span>
+                  <span className="font-mono text-sm text-neutral-200">
+                    {vnd(p.price)}
+                  </span>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </div>
     </section>
